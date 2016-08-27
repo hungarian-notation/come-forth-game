@@ -46,13 +46,13 @@ function level:getTilemap ()
   
   for x = 0, self.width - 1 do
     for y = 0, self.height - 1 do
-      local background  = self.layers.background:getTileId(x, y)
-      local platform    = self.layers.platforms:getTileId(x, y)
-      local wall        = self.layers.walls:getTileId(x, y)
+      local background  = self.layers.background:getTile(x, y)
+      local platform    = self.layers.platforms:getTile(x, y)
+      local wall        = self.layers.walls:getTile(x, y)
       
-      if background then batch:add(tiles.getQuad(background), x * config.grid_size, y * config.grid_size, 0, config.scale, config.scale) end
-      if platform then batch:add(tiles.getQuad(platform), x * config.grid_size, y * config.grid_size, 0, config.scale, config.scale) end
-      if wall then batch:add(tiles.getQuad(wall), x * config.grid_size, y * config.grid_size, 0, config.scale, config.scale) end
+      if background then batch:add(tiles[background].quad, x * config.grid_size, y * config.grid_size, 0, config.scale, config.scale) end
+      if platform then batch:add(tiles[platform].quad, x * config.grid_size, y * config.grid_size, 0, config.scale, config.scale) end
+      if wall then batch:add(tiles[wall].quad, x * config.grid_size, y * config.grid_size, 0, config.scale, config.scale) end
     end
   end
   

@@ -25,28 +25,28 @@ function layer.new (layer_data)
   return self
 end
 
-function layer:getTileId (...) 
+function layer:getTile (...) 
   -- This function takes either one or two args.
   -- 
-  -- Layer:getTileId(x, y)  -- see Layer:getTileIdByPosition
+  -- Layer:getTile(x, y)  -- see Layer:getTileIdByPosition
   -- Layer:getTile(index) -- see Layer:getTileIdByIndex
   
   local args = {...}
   
   if #args == 1 then
-    return self:getTileIdByIndex(...)
+    return self:getTileByIndex(...)
   elseif #args == 2 then
-    return self:getTileIdByPosition(...)
+    return self:getTileByPosition(...)
   else
     error("expected one or two arguments")
   end
 end
 
-function layer:getTileIdByPosition(x, y)
-  return self:getTileIdByIndex(x + y * self.width + 1)
+function layer:getTileByPosition(x, y)
+  return self:getTileByIndex(x + y * self.width + 1)
 end
 
-function layer:getTileIdByIndex(index) 
+function layer:getTileByIndex(index) 
   return self.data[index]
 end
 

@@ -9,13 +9,6 @@ local tiles = require "lib.tiles"
 
 local TILE_LAYERS = 3
 
---[[
-
-My thoughts here are that I need to strip out the extra crap tiled shoves into the map data. I really only need the layer data
-arrays, plus whatever object data I end up using. I can extract that shit when I create the level object.
-
-]]
-
 -- Map Data Handling
 
 local Level = {} ; Level.__index = Level 
@@ -34,10 +27,11 @@ function Level.new (map_data)
     
     self.objects = {}
     
-    object_layer = tiled.getLayerData(map_data, "objects")
+    local object_layer = tiled.getLayerData(map_data, "objects")
     
     for k, object in ipairs(object_layer.objects) do
-      print(object.type .. ":" .. object.name)
+      print('found object: ' .. object.type .. ":" .. object.name)
+      self.objects[#self.objects + 1] = object
     end
     
     return self

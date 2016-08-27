@@ -35,6 +35,16 @@ end
 
 function love.draw () 
   if current_level then
+    love.graphics.setColor(0xFF, 0xFF, 0xFF)
     love.graphics.draw(current_tilemap)
+        
+    for i, object in ipairs(current_level.objects) do
+      local color_array = config.object_colors[object.type] or { 0xFF, 0xFF, 0xFF }
+      love.graphics.setColor(unpack(color_array))
+      
+      if object.shape == "rectangle" then
+        love.graphics.rectangle("line", object.x, object.y, object.width, object.height)
+      end
+    end
   end
 end

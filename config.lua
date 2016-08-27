@@ -14,4 +14,9 @@ local config = {
 
 config.grid_size = config.tile_size * config.scale
 
+config.object_colors = {
+  spawn = { 0x00, 0xFF, 0xFF },
+  exit = { 0xFF, 0x00, 0x00 }
+}
+
 return config; 

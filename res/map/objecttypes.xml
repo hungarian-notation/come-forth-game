@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objecttypes>
+ <objecttype name="exit" color="#aa4c89">
+  <property name="target" type="string"/>
+ </objecttype>
+</objecttypes>

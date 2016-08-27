@@ -2,18 +2,18 @@
 
 local config = require "config"
 
-local Layer = {} ; Layer.__index = Layer
+local layer = {} ; layer.__index = layer
 
-function Layer.new (layer)
-  local self = setmetatable({}, Layer)
+function layer.new (layer_data)
+  local self = setmetatable({}, layer)
   
   self.data = {}
   
-  self.width = layer.width
-  self.height = layer.height
+  self.width = layer_data.width
+  self.height = layer_data.height
   
-  for i = 1, #layer.data do
-    local val = layer.data[i]
+  for i = 1, #layer_data.data do
+    local val = layer_data.data[i]
     
     if val == 0 then 
       self.data[i] = nil
@@ -25,7 +25,7 @@ function Layer.new (layer)
   return self
 end
 
-function Layer:getTileId (...) 
+function layer:getTileId (...) 
   -- This function takes either one or two args.
   -- 
   -- Layer:getTileId(x, y)  -- see Layer:getTileIdByPosition
@@ -42,12 +42,12 @@ function Layer:getTileId (...)
   end
 end
 
-function Layer:getTileIdByPosition(x, y)
+function layer:getTileIdByPosition(x, y)
   return self:getTileIdByIndex(x + y * self.width + 1)
 end
 
-function Layer:getTileIdByIndex(index) 
+function layer:getTileIdByIndex(index) 
   return self.data[index]
 end
 
-return Layer
+return layer

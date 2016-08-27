@@ -1,4 +1,4 @@
-local vector = {type = "vector"}
+local vector = {}
 local vector_metatable = {} ; setmetatable(vector, vector_metatable)
 
 -- specific constructor
@@ -43,6 +43,8 @@ function vector:__index (key)
     return self.x
   elseif key == 'y' or key == 'height' then
     return self.y
+  elseif key == 'type' then
+    return 'vector'
   end
 end
 
@@ -53,7 +55,7 @@ function vector:__tostring ()
 end
 
 function vector.isVector (thing) 
-  return thing.type and thing.type == vector.type
+  return thing.type and thing.type == 'vector'
 end
 
 function vector.areVectors (...) 

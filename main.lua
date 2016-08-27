@@ -5,6 +5,7 @@ local levels = require "lib.levels"
 local tiles = require "lib.tiles"
 
 local vector = require "lib.vector"
+local sensor = require "lib.physics.sensor"
 
 -- Debug
 
@@ -64,9 +65,25 @@ function love.load ()
   initialize()
 end
 
+local draw_player, draw_level
+
 local draw_watch_expressions, draw_map_wireframe
 
 function love.draw () 
+  draw_level()
+  draw_player()
+  
+  draw_map_wireframe()
+  draw_watch_expressions()
+end
+
+function draw_player ()
+  local minimum = state.player.position - config.player.origin
+  love.graphics.setColor(0xFF, 0xFF, 0xFF)
+  love.graphics.rectangle("fill", minimum.x * config.scale, minimum.y * config.scale, config.player.size.width * config.scale, config.player.size.height * config.scale)
+end
+
+function draw_level ()
   if level_object then
     love.graphics.setColor(0xFF, 0xFF, 0xFF)
     love.graphics.draw(level_tilemap)
@@ -80,9 +97,6 @@ function love.draw ()
       end
     end
   end
-  
-  draw_map_wireframe()
-  draw_watch_expressions()
 end
 
 local function draw_wirebox (color, tx, ty)

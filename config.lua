@@ -1,3 +1,5 @@
+local vector = require "lib.vector"
+
 local config = {
   tile_size         = 16,
   scale             = 1,
@@ -9,7 +11,12 @@ local config = {
   tileset_columns   = 20,
   
   window_width      = 800,
-  window_height     = 600
+  window_height     = 600,
+  
+  player = {
+    size            = vector(16, 32),
+    origin          = vector(8, 32)
+  }
 }
 
 config.grid_size = config.tile_size * config.scale

@@ -9,6 +9,7 @@ function sensor.sense (level, origin, offset, steps, sense_platforms)
     local grid    = pos:scale(1 / 16):floor()
     local in_tile = vector(pos.x % 16, pos.y % 16):floor()
     
+    
     local wall_tile = level.layers.walls:getTile(grid.x, grid.y)
     local platform_tile = level.layers.platforms:getTile(grid.x, grid.y)
     

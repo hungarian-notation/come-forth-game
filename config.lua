@@ -1,31 +1,34 @@
 local vector = require "lib.vector"
 
 local config = {
-  tile_size         = 16,
-  scale             = 1,
+  time_step           = 1.0 / 200.0,
   
-  tileset_width     = 320,
-  tileset_height    = 320,
-  
-  tileset_rows      = 20,
-  tileset_columns   = 20,
-  
-  window_width      = 800,
-  window_height     = 600,
-  
-  player = {
-    size            = vector(16, 32),
-    origin          = vector(8, 32),
-    acceleration    = 1000,
-    friction        = 0.95,
+  tile_size           = 16,
+  scale               = 1,
     
-    float_time      = 0.2,
+  tileset_width       = 320,
+  tileset_height      = 320,
     
-    jump_impulse    = 250,             
-    float_gravity   = 50,
-    gravity         = 800,               -- accurate gravity, assuming player is 1.5m tall
+  tileset_rows        = 20,
+  tileset_columns     = 20,
     
-    max_speed       = 400
+  window_width        = 800,
+  window_height       = 600,
+    
+  player = {  
+    size              = vector(16, 32),
+    origin            = vector(8, 32),
+    acceleration      = 1000,
+    friction          = 0.95,
+    
+    float_time        = 0.2,
+    fall_through_time = 0.1,
+    
+    jump_impulse      = 250,             
+    float_gravity     = 50,
+    gravity           = 800,               -- accurate gravity, assuming player is 1.5m tall
+    
+    max_speed         = 400
   }
 }
 

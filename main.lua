@@ -27,6 +27,8 @@ local watch_expressions = {
 -- Game State
 
 state = {
+  time_error = 0,
+  
   player = {
     spawn_location = { room = "entrance", spawner = "initial_spawn" },
     
@@ -36,6 +38,7 @@ state = {
     
     has_double_jump = false,
     released_jump = false,
+    fall_through_timer = 0,
     
     float_timer = 0
   },
@@ -108,6 +111,12 @@ local function simulate (dt)
     jump(true)
   end
   
+  if down then
+    player.fall_through_timer = config.player.fall_through_time
+  else
+    player.fall_through_timer = player.fall_through_timer - dt
+  end
+  
   if not player.on_ground then
     if not up then
       player.released_jump = true
@@ -133,10 +142,6 @@ local function simulate (dt)
   player.position.y = player.position.y + player.velocity.y * dt
   
   -- check ground
-  
-  local was_on_ground = player.on_ground
-  
-  player.on_ground = false
       
   local floor_sensor_hoffset = 4
   local floor_sensor_height = 4
@@ -144,14 +149,14 @@ local function simulate (dt)
   
   local suck_to_floor
   
-  if was_on_ground then
+  if player.on_ground then
     suck_to_floor = 12
   else
-    suck_to_floor = 6
+    suck_to_floor = 0
   end
   
-  local left_floor, left_floor_distance = sensor.sense(level_object, player.position - vector(-floor_sensor_hoffset, floor_sensor_height), vector(0, 1), 16, not down)
-  local right_floor, right_floor_distance = sensor.sense(level_object, player.position - vector(floor_sensor_hoffset, floor_sensor_height), vector(0, 1), 16, not down)
+  local left_floor, left_floor_distance = sensor.sense(level_object, player.position - vector(-floor_sensor_hoffset, floor_sensor_height), vector(0, 1), 16, player.fall_through_timer <= 0)
+  local right_floor, right_floor_distance = sensor.sense(level_object, player.position - vector(floor_sensor_hoffset, floor_sensor_height), vector(0, 1), 16, player.fall_through_timer <= 0)
   
   local floor = left_floor or right_floor
   
@@ -162,11 +167,17 @@ local function simulate (dt)
     max_floor_distance = math.min(left_floor_distance or right_floor_distance, right_floor_distance or left_floor_distance)
   end
   
-  if floor and player.velocity.y > 0 and min_floor_distance < (floor_sensor_margin + suck_to_floor) then
-    player.on_ground = true
-    player.position = player.position - vector(0, floor_sensor_margin - min_floor_distance)
-  elseif min_floor_distance == floor_sensor_margin and player.velocity.y >= 0 then
-    player.on_ground = true
+  if player.velocity.y >= 0 then
+    if floor and min_floor_distance < (floor_sensor_margin + suck_to_floor) then
+      player.on_ground = true
+      player.position = player.position - vector(0, floor_sensor_margin - min_floor_distance)
+    elseif min_floor_distance == floor_sensor_margin then
+      player.on_ground = true
+    end
+    
+    if not floor or min_floor_distance > (floor_sensor_margin + suck_to_floor) then
+      player.on_ground = false
+    end
   end
   
   -- check ceiling
@@ -201,8 +212,11 @@ local function simulate (dt)
     if player.velocity.x < 0 then
       player.velocity.x = 0
     end
+    
+    print(left_wall)
   end
   
+    
   -- check right collisions
   
   local right_wall, right_distance = sensor.sense(level_object, player.position - vector(0, side_sensor[1]), vector(1, 0), 16)
@@ -217,13 +231,29 @@ local function simulate (dt)
       player.velocity.x = 0
     end
   end
+  
+  state.time_error = state.time_error - dt
+end
+
+local function check_triggers() 
+  for i, object in ipairs(level_object.objects) do
+    local color_array = config.object_colors[object.type] or { 0xFF, 0xFF, 0xFF }
+    love.graphics.setColor(unpack(color_array))
+    
+    if object.shape == "rectangle" then
+      love.graphics.rectangle("line", object.x * config.scale, object.y * config.scale, object.width * config.scale, object.height * config.scale)
+    end
+  end
 end
 
 function love.update (dt)
-  simulate(dt / 4)
-  simulate(dt / 4)
-  simulate(dt / 4)
-  simulate(dt / 4)
+  state.time_error = state.time_error + dt
+  
+  while state.time_error > config.time_step do
+    simulate(config.time_step)
+  end
+  
+  check_triggers()
 end
 
 local draw_player, draw_level

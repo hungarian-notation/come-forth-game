@@ -43,7 +43,13 @@ function layer:getTile (...)
 end
 
 function layer:getTileByPosition(x, y)
-  return self:getTileByIndex(x + y * self.width + 1)
+  if x < 0 or x >= self.width then
+    return nil
+  elseif y < 0 or y >= self.height then
+    return nil
+  else
+    return self:getTileByIndex(x + y * self.width + 1)
+  end
 end
 
 function layer:getTileByIndex(index) 

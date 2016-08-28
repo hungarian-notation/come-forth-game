@@ -15,6 +15,9 @@ local watch_expressions = {
     "",
     "state.player.position",
     "state.player.velocity",
+    "state.player.on_ground",
+    "state.player.has_double_jump",
+    "state.player.released_jump",
     "state.active_level",
     "",
     "state.player.spawn_location.room",
@@ -30,6 +33,10 @@ state = {
     position = vector.zero(),
     velocity = vector.zero(),
     on_ground = true,
+    
+    has_double_jump = false,
+    released_jump = false,
+    
     float_timer = 0
   },
   
@@ -70,7 +77,7 @@ function love.load ()
   initialize()
 end
 
-function love.update (dt)
+local function simulate (dt)
   local left, right, up, down
   
   left = love.keyboard.isDown('a')
@@ -86,16 +93,28 @@ function love.update (dt)
     player.velocity.x = player.velocity.x + config.player.acceleration * dt
   end
   
-  player.velocity.x = player.velocity.x * (1 - config.player.friction)
-  player.position.x = player.position.x + player.velocity.x * dt
+  player.velocity.x = player.velocity.x * ((1 - config.player.friction) ^ dt)
   
-  if player.on_ground and up then
+  local function jump (has_double_jump) 
     player.on_ground = false
     player.float_timer = config.player.float_time
     player.velocity.y = -config.player.jump_impulse
+    
+    player.has_double_jump = has_double_jump
+    player.released_jump = false
+  end
+  
+  if player.on_ground and up then
+    jump(true)
   end
   
   if not player.on_ground then
+    if not up then
+      player.released_jump = true
+    elseif player.released_jump and player.has_double_jump then
+      jump(false)
+    end
+    
     local gravity = config.player.gravity
     
     if player.float_timer > 0 and up then
@@ -106,23 +125,48 @@ function love.update (dt)
     end
     
     player.velocity.y = player.velocity.y + gravity * dt
-    player.position.y = player.position.y + player.velocity.y * dt
   else
     player.velocity.y = 0
   end
   
+  player.position.x = player.position.x + player.velocity.x * dt
+  player.position.y = player.position.y + player.velocity.y * dt
+  
   -- check ground
   
-  local floor_sensor_height = 8
-  local floor_sensor_margin = 8
+  local was_on_ground = player.on_ground
   
-  local floor, floor_distance = sensor.sense(level_object, player.position - vector(0, floor_sensor_height), vector(0, 1), 16)
+  player.on_ground = false
+      
+  local floor_sensor_hoffset = 4
+  local floor_sensor_height = 4
+  local floor_sensor_margin = 4
   
-  if floor and player.velocity.y > 0 and floor_distance < floor_sensor_margin then
+  local suck_to_floor
+  
+  if was_on_ground then
+    suck_to_floor = 12
+  else
+    suck_to_floor = 6
+  end
+  
+  local left_floor, left_floor_distance = sensor.sense(level_object, player.position - vector(-floor_sensor_hoffset, floor_sensor_height), vector(0, 1), 16, not down)
+  local right_floor, right_floor_distance = sensor.sense(level_object, player.position - vector(floor_sensor_hoffset, floor_sensor_height), vector(0, 1), 16, not down)
+  
+  local floor = left_floor or right_floor
+  
+  local min_floor_distance, max_floor_distance
+  
+  if floor then  
+    min_floor_distance = math.min(left_floor_distance or right_floor_distance, right_floor_distance or left_floor_distance)
+    max_floor_distance = math.min(left_floor_distance or right_floor_distance, right_floor_distance or left_floor_distance)
+  end
+  
+  if floor and player.velocity.y > 0 and min_floor_distance < (floor_sensor_margin + suck_to_floor) then
     player.on_ground = true
-    player.position = player.position - vector(0, floor_sensor_margin - floor_distance)
-  elseif not floor or floor_distance > floor_sensor_margin then
-    player.on_ground = false
+    player.position = player.position - vector(0, floor_sensor_margin - min_floor_distance)
+  elseif min_floor_distance == floor_sensor_margin and player.velocity.y >= 0 then
+    player.on_ground = true
   end
   
   -- check ceiling
@@ -175,6 +219,13 @@ function love.update (dt)
   end
 end
 
+function love.update (dt)
+  simulate(dt / 4)
+  simulate(dt / 4)
+  simulate(dt / 4)
+  simulate(dt / 4)
+end
+
 local draw_player, draw_level
 local draw_watch_expressions, draw_map_wireframe
 
@@ -182,7 +233,7 @@ function love.draw ()
   draw_level()
   draw_player()
   
-  draw_map_wireframe()
+  -- draw_map_wireframe()
   draw_watch_expressions()
 end
 
@@ -217,10 +268,16 @@ function draw_map_wireframe ()
   local left_ramp_color = {0x00, 0xFF, 0x22, 0xFF}
   local right_ramp_color = {0x00, 0x22, 0xFF, 0xFF}
   local full_block_color = {0xFF, 0xFF, 0xFF, 0xFF}
+  local platform_color = {0xFF, 0x33, 0x33, 0xFF}
   
   for x = 0, level_object.width - 1 do
     for y = 0, level_object.height - 1 do
       local wall_tile = level_object.layers.walls:getTile(x, y)
+      local platform_tile = level_object.layers.platforms:getTile(x, y)
+      
+      if platform_tile then
+        draw_wirebox(platform_color, x, y)
+      end 
       
       if wall_tile and tiles[wall_tile].is_solid then
         if tiles[wall_tile].is_ramp then          

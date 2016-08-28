@@ -8,7 +8,7 @@ return {
   height = 36,
   tilewidth = 16,
   tileheight = 16,
-  nextobjectid = 10,
+  nextobjectid = 13,
   properties = {},
   tilesets = {
     {
@@ -393,6 +393,45 @@ return {
           properties = {
             ["target"] = "tomb.entry"
           }
+        },
+        {
+          id = 10,
+          name = "",
+          type = "crate",
+          shape = "rectangle",
+          x = 16,
+          y = 480,
+          width = 16,
+          height = 16,
+          rotation = 0,
+          visible = true,
+          properties = {}
+        },
+        {
+          id = 11,
+          name = "",
+          type = "crate",
+          shape = "rectangle",
+          x = 16,
+          y = 496,
+          width = 16,
+          height = 16,
+          rotation = 0,
+          visible = true,
+          properties = {}
+        },
+        {
+          id = 12,
+          name = "",
+          type = "crate",
+          shape = "rectangle",
+          x = 16,
+          y = 512,
+          width = 16,
+          height = 16,
+          rotation = 0,
+          visible = true,
+          properties = {}
         }
       }
     }

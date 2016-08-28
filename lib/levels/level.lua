@@ -2,6 +2,7 @@ local config = require "config"
 local tiled = require "lib.levels.tiled"
 local layer = require "lib.levels.layer"
 local tiles = require "lib.tiles"
+local vector = require "lib.vector"
 
 local level = {} ; level.__index = level 
 
@@ -26,6 +27,17 @@ function level.new (map_data)
     end
     
     return self
+end
+
+function level:initialize (env)
+  for i, object in pairs(self.objects) do
+    if object.type == 'crate' then
+      (require "lib.entities.crate").create(env, { 
+          position = vector(object.x, object.y),
+          object_id = object.id
+      })
+    end
+  end
 end
 
 function level:getObject (object_name)

@@ -24,6 +24,18 @@ function entities.newWorld ()
     return pairs(self.population)
   end
   
+  function world:update (dt, env)
+    for id, entity in self:each() do
+      if entity.update then entity:update(dt, env) end
+    end
+  end
+  
+  function world:draw (env)
+    for id, entity in self:each() do
+      if entity.draw then entity:draw(env) end
+    end
+  end
+  
   return world
 end
 

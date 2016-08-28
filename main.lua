@@ -9,22 +9,9 @@ local entities        = require "lib.entities"
 
 -- Game State
 
-local state, camera, world, level_object
-
-local function get_env ()
-  return {
-    camera = camera,
-    level = level_object,
-    state = state,
-    progress = state.progress,
-    world = world
-  }
-end
-
-state = {
-  time_error = 0,
-  active_level = nil,
-  player = nil,
+local env = {
+  level = nil,
+  world = nil,
   
   progress = {
       spawn_location    = { room = "entrance", spawner = "initial_spawn" },
@@ -37,42 +24,62 @@ state = {
       ankh_sun          = false,
       ankh_moon         = false,
       ankh_stars        = false
+  },
+  
+  destructables = require "lib.destructables",
+  
+  state = {
+    time_error = 0,
+    active_level = nil
+  },
+  
+  player = nil,
+  
+  camera = { 
+    x = -100, 
+    y = -10, 
+    
+    scale = 5, 
+    
+    width = config.window_width / 5, 
+    height = config.window_height / 5 
   }
 }
 
+local function get_env () -- DEPRECATED
+  return env
+end
+
 local function reset_world ()
-  world = entities.newWorld()
+  env.world = entities.newWorld()
 end
 
 reset_world()
- 
-camera = { x = -100, y = -10, scale = 5, width = config.window_width / 5, height = config.window_height / 5 }
 
 -- Level Management
-
-level_object = nil
-
-local level_tilemap = nil
 
 local function set_level (level_name, entry_name)
   reset_world()
   
   local definition = require("res.map." .. level_name)
   
-  level_object = levels.newLevel(definition)
-  level_tilemap = level_object:getTilemap()
+  env.level = levels.newLevel(definition)
   
-  local entry_object = level_object:getObject(entry_name)
+  env.level.name = level_name
+  env.level.tilemap = env.level:getTilemap()
   
-  state.active_level = level_name
+  local entry_object = env.level:getObject(entry_name)
   
-  state.player = (require "lib.entities.player").create(get_env(), {
+  env.level:initialize(env)
+  
+  env.player = (require "lib.entities.player").create(get_env(), {
     position = levels.getOrigin(entry_object)
   })
 end
 
 local function spawn() 
-  set_level(state.progress.spawn_location.room, state.progress.spawn_location.spawner)
+  env.destructables:reset()
+  set_level(env.progress.spawn_location.room, env.progress.spawn_location.spawner)
 end
 
 -- Initialization
@@ -98,7 +105,7 @@ end
 
 
 local function contains_player (object) 
-  local player_minimum = state.player.position - config.player.origin
+  local player_minimum = env.player.position - config.player.origin
   
   local fudge = 1
   
@@ -116,7 +123,7 @@ local function contains_player (object)
 end
 
 local function touches_player (object) 
-  local player_minimum = state.player.position - config.player.origin
+  local player_minimum = env.player.position - config.player.origin
   
   local fudge = 1
   
@@ -149,7 +156,7 @@ local function use_exit (exit_name, target)
 end
 
 local function check_triggers () 
-  for i, object in ipairs(level_object.objects) do
+  for i, object in ipairs(env.level.objects) do
     local contains = contains_player(object)
     local touching = touches_player(object)
     
@@ -162,9 +169,9 @@ local function check_triggers ()
       local exiting = false
       
       if math.floor(object_origin.x) <= 0 then -- left exit
-        exiting = state.player.velocity.x < 0
-      elseif math.ceil(object_origin.x) >= level_object.width then -- right exit
-        exiting = state.player.velocity.x > 0
+        exiting = env.player.velocity.x < 0
+      elseif math.ceil(object_origin.x) >= env.level.width then -- right exit
+        exiting = env.player.velocity.x > 0
       end
       
       if exiting then
@@ -173,106 +180,88 @@ local function check_triggers ()
     end
     
     if contains and object.type == 'spawn' then
-      if state.progress.spawn_location.room ~= state.active_level or state.progress.spawn_location.spawner ~= object.name then
-        state.progress.spawn_location.room = state.active_level
-        state.progress.spawn_location.spawner = object.name
+      if env.progress.spawn_location.room ~= env.level.name or env.progress.spawn_location.spawner ~= object.name then
+        env.progress.spawn_location.room = env.level.name
+        env.progress.spawn_location.spawner = object.name
         
-        print('spawn set to: ' .. object.name .. ' in ' .. state.active_level)
+        print('spawn set to: ' .. object.name .. ' in ' .. env.level.name)
       end
     end
   end
 end
 
-local update_weapon, update_world
+local update_world
 
 function love.update (dt)
-  update_world(dt)
+  env.world:update(dt, get_env())
   check_triggers()
 end
 
-function update_world (dt) 
-  local env = get_env()
-  
-  for id, entity in world:each() do
-    entity:update(dt, env)
-  end
-end
-
 local resolve_camera
-local draw_level, draw_world
+local draw_level
 local draw_watch_expressions, draw_map_wireframe
 
 function love.draw () 
   resolve_camera()
   draw_level()
-  draw_world()
+  env.world:draw(get_env())
 end
 
-function resolve_camera ()
-  if not state.player then
+function resolve_camera () -- keeps the camera pointing at the player, if a player entity is active
+  if not env.player then
     print('no player')
     return
   end
   
-  camera.x = state.player.position.x - camera.width * 0.5
-  camera.y = state.player.position.y - camera.height * 0.7
+  env.camera.x = env.player.position.x - env.camera.width * 0.5
+  env.camera.y = env.player.position.y - env.camera.height * 0.7
   
-  local camera_max = vector(camera.x + camera.width, camera.y + camera.height)
+  local camera_max = vector(env.camera.x + env.camera.width, env.camera.y + env.camera.height)
   
-  if camera.x < 0 then
-    camera.x = 0
+  if env.camera.x < 0 then
+    env.camera.x = 0
   end
   
-  if camera.y < 0 then
-    camera.y = 0
+  if env.camera.y < 0 then
+    env.camera.y = 0
   end
   
-  if camera_max.x > level_object.width * config.tile_size then
-    camera.x = level_object.width * config.tile_size - camera.width
+  if camera_max.x > env.level.width * config.tile_size then
+    env.camera.x = env.level.width * config.tile_size - env.camera.width
   end
   
-  if camera_max.y > level_object.height * config.tile_size then
-    camera.y = level_object.height * config.tile_size - camera.height
+  if camera_max.y > env.level.height * config.tile_size then
+    env.camera.y = env.level.height * config.tile_size - env.camera.height
   end
   
-  camera.x = math.floor(camera.x * camera.scale) / camera.scale
-  camera.y = math.floor(camera.y * camera.scale) / camera.scale
+  env.camera.x = math.floor(env.camera.x * env.camera.scale) / env.camera.scale
+  env.camera.y = math.floor(env.camera.y * env.camera.scale) / env.camera.scale
 end
 
-function draw_world()
-  local env = get_env()
-  
-  for id, entity in world:each() do
-    if entity.draw then
-      entity:draw(env)
-    end
-  end
-end
-
-function draw_level ()
-  if level_object then
+function draw_level () -- draws the tilemap and any placeholder boxes for level objects
+  if env.level then
     love.graphics.setColor(0xFF, 0xFF, 0xFF)
-    love.graphics.draw(level_tilemap, -camera.x * camera.scale, -camera.y * camera.scale, 0, camera.scale, camera.scale)
+    love.graphics.draw(env.level.tilemap, -env.camera.x * env.camera.scale, -env.camera.y * env.camera.scale, 0, env.camera.scale, env.camera.scale)
         
-    for i, object in ipairs(level_object.objects) do
+    for i, object in pairs(env.level.objects) do
       local color_array = config.object_colors[object.type] or { 0xFF, 0xFF, 0xFF }
       love.graphics.setColor(unpack(color_array))
       
       if object.shape == "rectangle" then
         love.graphics.rectangle("line", 
-          (object.x - camera.x) * camera.scale, 
-          (object.y - camera.y) * camera.scale, 
-          object.width * camera.scale,
-          object.height * camera.scale)
+          (object.x - env.camera.x) * env.camera.scale, 
+          (object.y - env.camera.y) * env.camera.scale, 
+          object.width * env.camera.scale,
+          object.height * env.camera.scale)
         
         if object.type == 'spawn' 
-          and state.active_level == state.progress.spawn_location.room 
-          and object.name == state.progress.spawn_location.spawner then
+          and env.level.name == env.progress.spawn_location.room 
+          and object.name == env.progress.spawn_location.spawner then
             love.graphics.ellipse("line", 
-              (object.x + object.width / 2 - camera.x) * camera.scale, 
-              (object.y + object.height / 2 - camera.y) * camera.scale, 
-              object.width / 2 * camera.scale,
-              object.height / 2 * camera.scale)
+              (object.x + object.width / 2 - env.camera.x) * env.camera.scale, 
+              (object.y + object.height / 2 - env.camera.y) * env.camera.scale, 
+              object.width / 2 * env.camera.scale,
+              object.height / 2 * env.camera.scale)
         end
       end
     end
@@ -282,11 +271,11 @@ end
 local function draw_wirebox (color, tx, ty)
   love.graphics.setColor(unpack(color))
   love.graphics.rectangle("line", 
-    (tx * config.tile_size - camera.x) * camera.scale + 1,  -- x
-    (ty * config.tile_size - camera.y) * camera.scale + 1,  -- y
+    (tx * config.tile_size - env.camera.x) * env.camera.scale + 1,  -- x
+    (ty * config.tile_size - env.camera.y) * env.camera.scale + 1,  -- y
     
-    config.tile_size * camera.scale - 2,                    -- width
-    config.tile_size * camera.scale - 2                     -- height
+    config.tile_size * env.camera.scale - 2,                    -- width
+    config.tile_size * env.camera.scale - 2                     -- height
   )
 end
 
@@ -296,10 +285,10 @@ function draw_map_wireframe ()
   local full_block_color = {0xFF, 0xFF, 0xFF, 0xFF}
   local platform_color = {0xFF, 0x33, 0x33, 0xFF}
   
-  for x = 0, level_object.width - 1 do
-    for y = 0, level_object.height - 1 do
-      local wall_tile = level_object.layers.walls:getTile(x, y)
-      local platform_tile = level_object.layers.platforms:getTile(x, y)
+  for x = 0, env.level.width - 1 do
+    for y = 0, env.level.height - 1 do
+      local wall_tile = env.level.layers.walls:getTile(x, y)
+      local platform_tile = env.level.layers.platforms:getTile(x, y)
       
       if platform_tile then
         draw_wirebox(platform_color, x, y)

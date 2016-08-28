@@ -17,10 +17,24 @@ end
 function projectile_entity:update (dt, env)
   self.position = self.position + self.velocity:scale(dt)
   
-  local impact = sensor.sense(env, self.position, vector(self.direction, 0), 8)
+  local impact, entity = sensor.sense(env, self.position + vector(0, 2), vector(self.direction, 0), 8, {
+    sense_entities = true
+  })
+
+  if not impact then
+    impact, entity = sensor.sense(env, self.position - vector(0, 2), vector(self.direction, 0), 8, {
+      sense_entities = true
+    })
+  end
 
   if impact then
-    env.world:destroy(self)
+    if entity then
+      if entity:shoot(env, projectile) then
+        env.world:destroy(self)
+      end
+    else
+      env.world:destroy(self)
+    end
   end
 end
 

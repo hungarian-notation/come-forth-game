@@ -9,14 +9,16 @@ local simulate_physics
 function player_entity.create (env, args) 
   local instance = setmetatable({
     position            = assert(args.position, 'args must contain position vector'),
+    origin              = config.player.origin,
+    size                = config.player.size,
+    
     velocity            = args.velocity or vector.zero(),
     
-    on_ground           = true,
-    first_jump          = false,
-    released_jump       = false,
-    float_timer         = 0,
-    
-    fall_through_timer  = 0,
+    _on_ground          = true,
+    _first_jump         = false,
+    _jump_released      = false,
+    _float_tmr          = 0,
+    _drop_tmr           = 0,
     
     blaster             = {
         cooldown  = 0,
@@ -103,45 +105,45 @@ function player_entity:simulate_physics (dt, env)
   
   self.velocity.x = self.velocity.x * ((1 - config.player.friction) ^ dt)
   
-  local function jump (first_jump) 
+  local function jump (_first_jump) 
     local factor = 1
     
-    if not first_jump then
+    if not _first_jump then
       factor = config.player.jump_attenuation
     end
     
-    self.on_ground = false
-    self.float_timer = jumpAbility().float_time
+    self._on_ground = false
+    self._float_tmr = jumpAbility().float_time
     self.velocity.y = -jumpAbility().impulse * factor
     
-    self.first_jump = first_jump
-    self.released_jump = false
+    self._first_jump = _first_jump
+    self._jump_released = false
   end
   
-  if self.on_ground and up then
+  if self._on_ground and up then
     jump(true)
   end
   
   if down then
-    self.fall_through_timer = config.player.fall_through_time
+    self._drop_tmr = config.player.fall_through_time
   else
-    self.fall_through_timer = self.fall_through_timer - dt
+    self._drop_tmr = self._drop_tmr - dt
   end
   
-  if not self.on_ground then
+  if not self._on_ground then
     if not up then
-      self.released_jump = true
-    elseif self.released_jump and self.first_jump and env.progress.double_jump then
+      self._jump_released = true
+    elseif self._jump_released and self._first_jump and env.progress.double_jump then
       jump(false)
     end
     
     local gravity = config.player.gravity
     
-    if self.float_timer > 0 and up then
+    if self._float_tmr > 0 and up then
       gravity = jumpAbility().float_gravity
-      self.float_timer = self.float_timer - dt
+      self._float_tmr = self._float_tmr - dt
     else
-      self.float_timer = 0
+      self._float_tmr = 0
     end
     
     self.velocity.y = self.velocity.y + gravity * dt
@@ -160,14 +162,33 @@ function player_entity:simulate_physics (dt, env)
   
   local suck_to_floor
   
-  if self.on_ground then
+  if self._on_ground then
     suck_to_floor = 12
   else
     suck_to_floor = 0
   end
   
-  local left_floor_distance = sensor.sense(env, self.position - vector(-floor_sensor_hoffset, floor_sensor_height), vector(0, 1), 16, self.fall_through_timer <= 0)
-  local right_floor_distance = sensor.sense(env, self.position - vector(floor_sensor_hoffset, floor_sensor_height), vector(0, 1), 16, self.fall_through_timer <= 0)
+  local left_floor_distance = sensor.sense(
+    env,  
+    self.position - vector(-floor_sensor_hoffset, floor_sensor_height), 
+    vector(0, 1), 16, 
+    
+    { 
+      sense_platforms = self._drop_tmr <= 0,
+      sense_entities = true
+    }
+  )
+  
+  local right_floor_distance = sensor.sense(
+    env, 
+    self.position - vector(floor_sensor_hoffset, floor_sensor_height), 
+    vector(0, 1), 16, 
+    
+    { 
+      sense_platforms = self._drop_tmr <= 0,
+      sense_entities = true
+    }
+  )
   
   local floor_distance
   
@@ -183,14 +204,14 @@ function player_entity:simulate_physics (dt, env)
   
   if self.velocity.y >= 0 then
     if floor_distance and floor_distance < (floor_sensor_margin + suck_to_floor) then
-      self.on_ground = true
+      self._on_ground = true
       self.position = self.position - vector(0, floor_sensor_margin - floor_distance)
     elseif floor_distance == floor_sensor_margin then
-      self.on_ground = true
+      self._on_ground = true
     end
     
     if not floor_distance or floor_distance > (floor_sensor_margin + suck_to_floor) then
-      self.on_ground = false
+      self._on_ground = false
     end
   end
   
@@ -199,7 +220,7 @@ function player_entity:simulate_physics (dt, env)
   local ceiling_sensor_height = 24
   local ceiling_sensor_margin = 8
   
-  local ceiling_distance = sensor.sense(env, self.position - vector(0, ceiling_sensor_height), vector(0, -1), 16)
+  local ceiling_distance = sensor.sense(env, self.position - vector(0, ceiling_sensor_height), vector(0, -1), 16, { sense_entities = true })
   
   if ceiling_distance and ceiling_distance < ceiling_sensor_margin then
     self.position = self.position + vector(0, ceiling_sensor_margin - ceiling_distance)
@@ -215,10 +236,10 @@ function player_entity:simulate_physics (dt, env)
   
   -- check left collision
   
-  local left_distance = sensor.sense(env, self.position - vector(0, side_sensor[1]), vector(-1, 0), 16)
+  local left_distance = sensor.sense(env, self.position - vector(0, side_sensor[1]), vector(-1, 0), 16, { sense_entities = true })
   
   if not left_distance then
-    left_distance = sensor.sense(env, self.position - vector(0, side_sensor[2]), vector(-1, 0), 16)
+    left_distance = sensor.sense(env, self.position - vector(0, side_sensor[2]), vector(-1, 0), 16, { sense_entities = true })
   end
   
   if left_distance and left_distance < side_margin then
@@ -230,10 +251,10 @@ function player_entity:simulate_physics (dt, env)
     
   -- check right collisions
   
-  local right_distance = sensor.sense(env, self.position - vector(0, side_sensor[1]), vector(1, 0), 16)
+  local right_distance = sensor.sense(env, self.position - vector(0, side_sensor[1]), vector(1, 0), 16, { sense_entities = true })
   
   if not right_distance then
-    right_distance = sensor.sense(env, self.position - vector(0, side_sensor[2]), vector(1, 0), 16)
+    right_distance = sensor.sense(env, self.position - vector(0, side_sensor[2]), vector(1, 0), 16, { sense_entities = true })
   end
   
   if right_distance and right_distance < side_margin then

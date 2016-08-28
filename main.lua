@@ -26,7 +26,7 @@ local env = {
       ankh_stars        = false
   },
   
-  destructables = require "lib.destructables",
+  destructibles = require "lib.destructibles",
   
   state = {
     time_error = 0,
@@ -78,7 +78,7 @@ local function set_level (level_name, entry_name)
 end
 
 local function spawn() 
-  env.destructables:reset()
+  env.destructibles:reset()
   set_level(env.progress.spawn_location.room, env.progress.spawn_location.spawner)
 end
 

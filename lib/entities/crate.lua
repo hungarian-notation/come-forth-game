@@ -17,7 +17,7 @@ function crate_entity.create (env, args) -- create new crate entity
     is_solid      = true
   }, crate_entity)
 
-  if not env.destructables:is_destroyed(env.level.name, instance.object_id) then
+  if not env.destructibles:is_destroyed(env.level.name, instance.object_id) then
     return env.world:create(instance)
   else
     return nil
@@ -26,7 +26,7 @@ end
 
 function crate_entity:shoot (env, projectile)
   env.world:destroy(self)
-  env.destructables:destroy(env.level.name, self.object_id)
+  env.destructibles:destroy(env.level.name, self.object_id)
   return true
 end
 

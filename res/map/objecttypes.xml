@@ -3,4 +3,6 @@
  <objecttype name="exit" color="#aa4c89">
   <property name="target" type="string"/>
  </objecttype>
+ <objecttype name="spawn" color="#55aaff"/>
+ <objecttype name="killbox" color="#ff0004"/>
 </objecttypes>

@@ -19,7 +19,7 @@ return {
       tileheight = 16,
       spacing = 0,
       margin = 0,
-      image = "../../art/tileset.png",
+      image = "../art/tileset.png",
       imagewidth = 320,
       imageheight = 320,
       tileoffset = {
@@ -346,7 +346,9 @@ return {
           height = 48,
           rotation = 0,
           visible = true,
-          properties = {}
+          properties = {
+            ["target"] = "entrance.lower_level"
+          }
         }
       }
     }

@@ -50,9 +50,9 @@ function level:getTilemap ()
       local platform    = self.layers.platforms:getTile(x, y)
       local wall        = self.layers.walls:getTile(x, y)
       
-      if background then batch:add(tiles[background].quad, x * config.grid_size, y * config.grid_size, 0, config.scale, config.scale) end
-      if platform then batch:add(tiles[platform].quad, x * config.grid_size, y * config.grid_size, 0, config.scale, config.scale) end
-      if wall then batch:add(tiles[wall].quad, x * config.grid_size, y * config.grid_size, 0, config.scale, config.scale) end
+      if background then batch:add(tiles[background].quad, x * config.tile_size, y * config.tile_size, 0) end
+      if platform then batch:add(tiles[platform].quad, x * config.tile_size, y * config.tile_size, 0) end
+      if wall then batch:add(tiles[wall].quad, x * config.tile_size, y * config.tile_size, 0) end
     end
   end
   

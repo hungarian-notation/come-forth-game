@@ -359,7 +359,9 @@ return {
           height = 48,
           rotation = 0,
           visible = true,
-          properties = {}
+          properties = {
+            ["target"] = "lower_chamber.lower_level"
+          }
         },
         {
           id = 8,

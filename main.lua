@@ -43,7 +43,9 @@ state = {
     float_timer = 0
   },
   
-  active_level = nil
+  active_level = nil,
+  
+  camera = { x = -100, y = -10, scale = 1 }
 }
 
 local player = state.player
@@ -63,6 +65,7 @@ local function set_level (level_name, entry_name)
   
   state.active_level = level_name
   state.player.position = levels.getOrigin(entry_object)
+  state.player.exited = false
 end
 
 -- Initialization
@@ -212,10 +215,7 @@ local function simulate (dt)
     if player.velocity.x < 0 then
       player.velocity.x = 0
     end
-    
-    print(left_wall)
   end
-  
     
   -- check right collisions
   
@@ -235,13 +235,57 @@ local function simulate (dt)
   state.time_error = state.time_error - dt
 end
 
-local function check_triggers() 
+local function contains_player (object) 
+  local player_minimum = player.position - config.player.origin
+  
+  local fudge = 1
+  
+  if player_minimum.x < object.x - fudge then
+    return false
+  elseif player_minimum.y < object.y - fudge then
+    return false
+  elseif player_minimum.x > (object.x + object.width - config.player.size.x + fudge) then
+    return false
+  elseif player_minimum.y > (object.y + object.height - config.player.size.y + fudge) then
+    return false
+  else
+    return true
+  end
+end
+
+local function split_address (address)   
+  for i = #address, 0, -1 do
+    if i == 0 then error('address does not contain a delimiter') end
+    if address:sub(i, i) == '.' then
+      return address:sub(1, i - 1), address:sub( i + 1, -1)
+    end
+  end
+end
+
+local function use_exit (exit_name, target)
+  local room_name, object_name = split_address(target)
+  print('using exit ' .. exit_name .. ' to ' .. object_name .. ' in ' .. room_name)
+  set_level(room_name, object_name)
+end
+
+local function check_triggers () 
   for i, object in ipairs(level_object.objects) do
-    local color_array = config.object_colors[object.type] or { 0xFF, 0xFF, 0xFF }
-    love.graphics.setColor(unpack(color_array))
-    
-    if object.shape == "rectangle" then
-      love.graphics.rectangle("line", object.x * config.scale, object.y * config.scale, object.width * config.scale, object.height * config.scale)
+    if contains_player(object) then
+      
+      if object.type == 'exit' then
+        local object_origin = vector(object.x + object.width / 2, object.y / object.height)
+        local exiting = false
+        
+        if math.floor(object_origin.x) <= 0 then -- left exit
+          exiting = player.velocity.x < 0
+        elseif math.ceil(object_origin.x) >= level_object.width then -- right exit
+          exiting = player.velocity.x > 0
+        end
+        
+        if exiting then
+          return use_exit(object.name, object.properties.target)
+        end
+      end
     end
   end
 end

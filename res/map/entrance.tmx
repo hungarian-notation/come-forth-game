@@ -123,7 +123,11 @@
  </layer>
  <objectgroup name="objects">
   <object id="2" name="initial_spawn" type="spawn" x="160" y="496" width="32" height="48"/>
-  <object id="6" name="lower_level" type="exit" x="-16" y="480" width="32" height="48"/>
+  <object id="6" name="lower_level" type="exit" x="-16" y="480" width="32" height="48">
+   <properties>
+    <property name="target" value="lower_chamber.lower_level"/>
+   </properties>
+  </object>
   <object id="8" name="upper_level" type="exit" x="560" y="160" width="32" height="48">
    <properties>
     <property name="target" value="tomb.entry"/>

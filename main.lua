@@ -45,10 +45,11 @@ state = {
   
   active_level = nil,
   
-  camera = { x = -100, y = -10, scale = 1 }
+  camera = { x = -100, y = -10, scale = 4, width = config.window_width / 4, height = config.window_height / 4 }
 }
 
 local player = state.player
+local camera = state.camera
 
 -- Level Management
 
@@ -297,6 +298,32 @@ function love.update (dt)
     simulate(config.time_step)
   end
   
+  camera.x = player.position.x - camera.width * 0.5
+  camera.y = player.position.y - camera.height * 0.7
+  
+  local camera_max = vector(camera.x + camera.width, camera.y + camera.height)
+  
+  if camera.x < 0 then
+    camera.x = 0
+  end
+  
+  if camera.y < 0 then
+    camera.y = 0
+  end
+  
+  print(tostring(camera_max))
+  
+  if camera_max.x > level_object.width * config.tile_size then
+    camera.x = level_object.width * config.tile_size - camera.width
+  end
+  
+  if camera_max.y > level_object.height * config.tile_size then
+    camera.y = level_object.height * config.tile_size - camera.height
+  end
+  
+  camera.x = math.floor(camera.x * camera.scale) / camera.scale
+  camera.y = math.floor(camera.y * camera.scale) / camera.scale
+  
   check_triggers()
 end
 
@@ -314,20 +341,20 @@ end
 function draw_player ()
   local minimum = (state.player.position - config.player.origin):floor()
   love.graphics.setColor(0xFF, 0xFF, 0xFF)
-  love.graphics.rectangle("fill", minimum.x * config.scale, minimum.y * config.scale, config.player.size.x * config.scale, config.player.size.y * config.scale)
+  love.graphics.rectangle("fill", (minimum.x - camera.x) * camera.scale, (minimum.y - camera.y) * camera.scale, config.player.size.x * camera.scale, config.player.size.y * camera.scale)
 end
 
 function draw_level ()
   if level_object then
     love.graphics.setColor(0xFF, 0xFF, 0xFF)
-    love.graphics.draw(level_tilemap)
+    love.graphics.draw(level_tilemap, -camera.x * camera.scale, -camera.y * camera.scale, 0, camera.scale, camera.scale)
         
     for i, object in ipairs(level_object.objects) do
       local color_array = config.object_colors[object.type] or { 0xFF, 0xFF, 0xFF }
       love.graphics.setColor(unpack(color_array))
       
       if object.shape == "rectangle" then
-        love.graphics.rectangle("line", object.x * config.scale, object.y * config.scale, object.width * config.scale, object.height * config.scale)
+        love.graphics.rectangle("line", (object.x - camera.x) * camera.scale, (object.y - camera.y) * camera.scale, object.width * camera.scale, object.height * camera.scale)
       end
     end
   end
@@ -335,7 +362,13 @@ end
 
 local function draw_wirebox (color, tx, ty)
   love.graphics.setColor(unpack(color))
-  love.graphics.rectangle("line", tx * config.grid_size + 1, ty * config.grid_size + 1, config.grid_size - 2, config.grid_size - 2)
+  love.graphics.rectangle("line", 
+    (tx * config.tile_size - camera.x) * camera.scale + 1,  -- x
+    (ty * config.tile_size - camera.y) * camera.scale + 1,  -- y
+    
+    config.tile_size * camera.scale - 2,                    -- width
+    config.tile_size * camera.scale - 2                     -- height
+  )
 end
 
 function draw_map_wireframe ()

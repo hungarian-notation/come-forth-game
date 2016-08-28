@@ -4,7 +4,6 @@ local config = {
   time_step           = 1.0 / 200.0,
   
   tile_size           = 16,
-  scale               = 1,
     
   tileset_width       = 320,
   tileset_height      = 320,
@@ -12,8 +11,8 @@ local config = {
   tileset_rows        = 20,
   tileset_columns     = 20,
     
-  window_width        = 800,
-  window_height       = 600,
+  window_width        = 1600,
+  window_height       = 900,
     
   player = {  
     size              = vector(16, 32),
@@ -31,8 +30,6 @@ local config = {
     max_speed         = 400
   }
 }
-
-config.grid_size = config.tile_size * config.scale
 
 config.object_colors = {
   spawn = { 0x00, 0xFF, 0xFF },

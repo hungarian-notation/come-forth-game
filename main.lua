@@ -200,7 +200,25 @@ local function check_triggers ()
   end
 end
 
-local function update_weapon (dt) 
+local update_weapon, update_world
+
+function love.update (dt)
+  state.time_error = state.time_error + dt
+  
+  local env = get_env()
+  
+  while state.time_error > config.time_step do
+    player_physics.simulate(player, env, config.time_step)
+    state.time_error = state.time_error - config.time_step
+  end
+  
+  update_weapon(dt)
+  update_world(dt)
+  
+  check_triggers()
+end
+
+function update_weapon (dt) 
   local blaster = player.blaster
   
   local shoot_left, shoot_right
@@ -233,8 +251,7 @@ local function update_weapon (dt)
   end
 end
 
-
-local function update_world (dt) 
+function update_world (dt) 
   local env = get_env()
   
   for id, entity in world:each() do
@@ -242,29 +259,19 @@ local function update_world (dt)
   end
 end
 
-function love.update (dt)
-  state.time_error = state.time_error + dt
-  
-  local env = get_env()
-  
-  while state.time_error > config.time_step do
-    player_physics.simulate(player, env, config.time_step)
-    state.time_error = state.time_error - config.time_step
-  end
-  
-  update_weapon(dt)
-  update_world(dt)
-  
-  check_triggers()
-end
-
+local resolve_camera
 local draw_player, draw_level, draw_world
 local draw_watch_expressions, draw_map_wireframe
 
 function love.draw () 
+  resolve_camera()
   
-  -- Update Camera
-  
+  draw_level()
+  draw_player()
+  draw_world()
+end
+
+function resolve_camera ()
   camera.x = player.position.x - camera.width * 0.5
   camera.y = player.position.y - camera.height * 0.7
   
@@ -288,14 +295,6 @@ function love.draw ()
   
   camera.x = math.floor(camera.x * camera.scale) / camera.scale
   camera.y = math.floor(camera.y * camera.scale) / camera.scale
-  
-  -- Draw Level
-  
-  draw_level()
-  draw_player()
-  draw_world()
-  
-  -- draw_map_wireframe()
 end
 
 function draw_player ()

@@ -6,7 +6,6 @@ local vector = require "lib.vector"
 local player_physics = {}
 
 function player_physics.simulate (player, env, dt)  
-  
   local function jumpAbility () 
     if player.progress.high_jump then
       return config.player.high_jump

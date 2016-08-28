@@ -11,51 +11,34 @@ local entities        = require "lib.entities"
 
 -- Game State
 
-local state, player, camera, world, level_object
+local state, camera, world, level_object
 
 local function get_env ()
   return {
-    player = player,
     camera = camera,
     level = level_object,
     state = state,
+    progress = state.progress,
     world = world
   }
 end
 
 state = {
   time_error = 0,
-  active_level = nil
-}
-
-player = {
-  position            = vector.zero(),
-  velocity            = vector.zero(),
+  active_level = nil,
+  player = nil,
   
-  on_ground           = true,
-  
-  first_jump          = false,
-  released_jump       = false,
-  float_timer         = 0,
-  
-  fall_through_timer  = 0,
-  
-  blaster             = {
-      cooldown  = 0,
-      released  = false
-  },
-  
-  progress            = {
-    spawn_location    = { room = "entrance", spawner = "initial_spawn" },
-  
-    blaster           = true,
-    high_jump         = true,
-    double_jump       = true,
-    super_blaster     = false,
-        
-    ankh_sun          = false,
-    ankh_moon         = false,
-    ankh_stars        = false
+  progress = {
+      spawn_location    = { room = "entrance", spawner = "initial_spawn" },
+    
+      blaster           = true,
+      high_jump         = true,
+      double_jump       = true,
+      super_blaster     = false,
+          
+      ankh_sun          = false,
+      ankh_moon         = false,
+      ankh_stars        = false
   }
 }
 
@@ -74,6 +57,8 @@ level_object = nil
 local level_tilemap = nil
 
 local function set_level (level_name, entry_name)
+  reset_world()
+  
   local definition = require("res.map." .. level_name)
   
   level_object = levels.newLevel(definition)
@@ -82,14 +67,14 @@ local function set_level (level_name, entry_name)
   local entry_object = level_object:getObject(entry_name)
   
   state.active_level = level_name
-  player.position = levels.getOrigin(entry_object)
-  player.exited = false
   
-  reset_world()
+  state.player = (require "lib.entities.player").create(get_env(), {
+    position = levels.getOrigin(entry_object)
+  })
 end
 
 local function spawn() 
-  set_level(player.progress.spawn_location.room, player.progress.spawn_location.spawner)
+  set_level(state.progress.spawn_location.room, state.progress.spawn_location.spawner)
 end
 
 -- Initialization
@@ -115,7 +100,7 @@ end
 
 
 local function contains_player (object) 
-  local player_minimum = player.position - config.player.origin
+  local player_minimum = state.player.position - config.player.origin
   
   local fudge = 1
   
@@ -133,7 +118,7 @@ local function contains_player (object)
 end
 
 local function touches_player (object) 
-  local player_minimum = player.position - config.player.origin
+  local player_minimum = state.player.position - config.player.origin
   
   local fudge = 1
   
@@ -179,9 +164,9 @@ local function check_triggers ()
       local exiting = false
       
       if math.floor(object_origin.x) <= 0 then -- left exit
-        exiting = player.velocity.x < 0
+        exiting = state.player.velocity.x < 0
       elseif math.ceil(object_origin.x) >= level_object.width then -- right exit
-        exiting = player.velocity.x > 0
+        exiting = state.player.velocity.x > 0
       end
       
       if exiting then
@@ -190,9 +175,9 @@ local function check_triggers ()
     end
     
     if contains and object.type == 'spawn' then
-      if player.progress.spawn_location.room ~= state.active_level or player.progress.spawn_location.spawner ~= object.name then
-        player.progress.spawn_location.room = state.active_level
-        player.progress.spawn_location.spawner = object.name
+      if state.progress.spawn_location.room ~= state.active_level or state.progress.spawn_location.spawner ~= object.name then
+        state.progress.spawn_location.room = state.active_level
+        state.progress.spawn_location.spawner = object.name
         
         print('spawn set to: ' .. object.name .. ' in ' .. state.active_level)
       end
@@ -203,52 +188,8 @@ end
 local update_weapon, update_world
 
 function love.update (dt)
-  state.time_error = state.time_error + dt
-  
-  local env = get_env()
-  
-  while state.time_error > config.time_step do
-    player_physics.simulate(player, env, config.time_step)
-    state.time_error = state.time_error - config.time_step
-  end
-  
-  update_weapon(dt)
   update_world(dt)
-  
   check_triggers()
-end
-
-function update_weapon (dt) 
-  local blaster = player.blaster
-  
-  local shoot_left, shoot_right
-  
-  shoot_left = love.keyboard.isDown('left')
-  shoot_right = love.keyboard.isDown('right')
-  
-  local function shoot (dir)
-    blaster.cooldown = config.player.blaster_cooldown
-    blaster.released = false
-    
-    require('lib.entities.projectile').create(get_env(), {
-      position = player.position - vector(dir * -8, 16),
-      direction = dir
-    })
-  end
-  
-  if not (shoot_left or shoot_right) then
-    blaster.released = true
-  end
-  
-  if blaster.cooldown > 0 then
-    blaster.cooldown = blaster.cooldown - dt
-  elseif blaster.released then
-    if shoot_left then
-      shoot(-1)
-    elseif shoot_right then
-      shoot(1)
-    end
-  end
 end
 
 function update_world (dt) 
@@ -260,20 +201,23 @@ function update_world (dt)
 end
 
 local resolve_camera
-local draw_player, draw_level, draw_world
+local draw_level, draw_world
 local draw_watch_expressions, draw_map_wireframe
 
 function love.draw () 
   resolve_camera()
-  
   draw_level()
-  draw_player()
   draw_world()
 end
 
 function resolve_camera ()
-  camera.x = player.position.x - camera.width * 0.5
-  camera.y = player.position.y - camera.height * 0.7
+  if not state.player then
+    print('no player')
+    return
+  end
+  
+  camera.x = state.player.position.x - camera.width * 0.5
+  camera.y = state.player.position.y - camera.height * 0.7
   
   local camera_max = vector(camera.x + camera.width, camera.y + camera.height)
   
@@ -295,12 +239,6 @@ function resolve_camera ()
   
   camera.x = math.floor(camera.x * camera.scale) / camera.scale
   camera.y = math.floor(camera.y * camera.scale) / camera.scale
-end
-
-function draw_player ()
-  local minimum = (player.position - config.player.origin):floor()
-  love.graphics.setColor(0xFF, 0xFF, 0xFF)
-  love.graphics.rectangle("fill", (minimum.x - camera.x) * camera.scale, (minimum.y - camera.y) * camera.scale, config.player.size.x * camera.scale, config.player.size.y * camera.scale)
 end
 
 function draw_world()
@@ -330,8 +268,8 @@ function draw_level ()
           object.height * camera.scale)
         
         if object.type == 'spawn' 
-          and state.active_level == player.progress.spawn_location.room 
-          and object.name == player.progress.spawn_location.spawner then
+          and state.active_level == state.progress.spawn_location.room 
+          and object.name == state.progress.spawn_location.spawner then
             love.graphics.ellipse("line", 
               (object.x + object.width / 2 - camera.x) * camera.scale, 
               (object.y + object.height / 2 - camera.y) * camera.scale, 

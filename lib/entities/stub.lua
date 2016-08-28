@@ -1,11 +1,14 @@
+local config = require "config"
+local vector = require "lib.vector"
+
 local _entity = {} ; _entity.__index = _entity
 
-function _entity.create (env, ...) 
+function _entity.create (env, args) 
   local instance = setmetatable({}, _entity)
   
   -- initialize entity
   
-  return env.entity:create(instance)
+  return env.world:create(instance)
 end
 
 function _entity:update (dt, env)

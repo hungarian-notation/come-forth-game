@@ -1,4 +1,4 @@
-local vector = {}
+local vector = {type='vector'} ; vector.__index = vector
 local vector_metatable = {} ; setmetatable(vector, vector_metatable)
 
 -- specific constructor
@@ -35,16 +35,6 @@ function vector_metatable.__call (table, ...)
     return vector.new(args[1], args[2])
   else
     error('expected zero, one, or two arguments')
-  end
-end
-
-function vector:__index (key)
-  if key == 'x' or key == 'width' then
-    return self.x
-  elseif key == 'y' or key == 'height' then
-    return self.y
-  elseif key == 'type' then
-    return 'vector'
   end
 end
 

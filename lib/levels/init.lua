@@ -30,7 +30,7 @@ levels.newLevel = require("lib.levels.level").new
 function levels.getOrigin (object)
   local pos = vector(object.x, object.y)
   local size = vector(object.width, object.height)
-  return vector(pos.x + size.width / 2, pos.y + size.height)
+  return vector(pos.x + size.x / 2, pos.y + size.y)
 end
 
 return levels

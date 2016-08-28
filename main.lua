@@ -80,7 +80,7 @@ end
 function draw_player ()
   local minimum = state.player.position - config.player.origin
   love.graphics.setColor(0xFF, 0xFF, 0xFF)
-  love.graphics.rectangle("fill", minimum.x * config.scale, minimum.y * config.scale, config.player.size.width * config.scale, config.player.size.height * config.scale)
+  love.graphics.rectangle("fill", minimum.x * config.scale, minimum.y * config.scale, config.player.size.x * config.scale, config.player.size.y * config.scale)
 end
 
 function draw_level ()

@@ -15,7 +15,15 @@ local config = {
   
   player = {
     size            = vector(16, 32),
-    origin          = vector(8, 32)
+    origin          = vector(8, 32),
+    acceleration    = 1000,
+    friction        = 0.05,
+    
+    float_time      = 0.2,
+    
+    jump_impulse    = 250,             
+    float_gravity   = 50,
+    gravity         = 800               -- accurate gravity, assuming player is 1.5m tall
   }
 }
 

@@ -17,23 +17,36 @@ local config = {
   player = {  
     size              = vector(16, 32),
     origin            = vector(8, 32),
-    acceleration      = 1000,
-    friction          = 0.95,
-    
-    float_time        = 0.2,
     fall_through_time = 0.1,
     
-    jump_impulse      = 250,             
-    float_gravity     = 50,
-    gravity           = 800,               -- accurate gravity, assuming player is 1.5m tall
+    acceleration      = 500,
+    friction          = 0.95,
     
-    max_speed         = 400
+    jump_attenuation  = 0.6,
+    
+    blaster_cooldown  = 0.2,
+    blaster_velocity  = 300,
+    
+    jump = {
+      impulse         = 200,     
+      float_time      = 0.2,
+      float_gravity   = 50,
+    },
+    
+    high_jump = {
+      impulse         = 250,     
+      float_time      = 0.2,
+      float_gravity   = 50,
+    },
+    
+    gravity           = 800
   }
 }
 
 config.object_colors = {
   spawn = { 0x00, 0xFF, 0xFF },
-  exit = { 0xFF, 0x00, 0x00 }
+  exit = { 0xAA, 0xFF, 0x00 },
+  killbox = { 0xFF, 0x00, 0x00 }
 }
 
 return config; 

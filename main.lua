@@ -1,55 +1,54 @@
-local config = require "config"
-local text = require "text.en"
+local config          = require "config"
+local text            = require "text.en"
 
-local levels = require "lib.levels"
-local tiles = require "lib.tiles"
-
-local vector = require "lib.vector"
-local sensor = require "lib.physics.sensor"
-
--- Debug
-
-local watch_expressions = {
-    "",
-    "love.timer.getFPS()",
-    "",
-    "state.player.position",
-    "state.player.velocity",
-    "state.player.on_ground",
-    "state.player.has_double_jump",
-    "state.player.released_jump",
-    "state.active_level",
-    "",
-    "state.player.spawn_location.room",
-    "state.player.spawn_location.spawner"
-}
+local levels          = require "lib.levels"
+local tiles           = require "lib.tiles"
+local vector          = require "lib.vector"
+local player_physics  = require "lib.physics.player"
+local sensor          = require "lib.physics.sensor"
 
 -- Game State
 
-state = {
+local state = {
   time_error = 0,
-  
-  player = {
-    spawn_location = { room = "entrance", spawner = "initial_spawn" },
-    
-    position = vector.zero(),
-    velocity = vector.zero(),
-    on_ground = true,
-    
-    has_double_jump = false,
-    released_jump = false,
-    fall_through_timer = 0,
-    
-    float_timer = 0
-  },
-  
-  active_level = nil,
-  
-  camera = { x = -100, y = -10, scale = 4, width = config.window_width / 4, height = config.window_height / 4 }
+  active_level = nil
 }
 
-local player = state.player
-local camera = state.camera
+local player = {
+  position            = vector.zero(),
+  velocity            = vector.zero(),
+  
+  on_ground           = true,
+  
+  first_jump          = false,
+  released_jump       = false,
+  float_timer         = 0,
+  
+  fall_through_timer  = 0,
+  
+  blaster             = {
+      cooldown  = 0,
+      released  = false
+  },
+  
+  progress            = {
+    spawn_location    = { room = "entrance", spawner = "initial_spawn" },
+  
+    blaster           = true,
+    high_jump         = true,
+    double_jump       = true,
+    super_blaster     = false,
+        
+    ankh_sun          = false,
+    ankh_moon         = false,
+    ankh_stars        = false
+  }
+}
+
+local next_projectile = 1
+local projectiles = {}
+
+local camera = { x = -100, y = -10, scale = 5, width = config.window_width / 5, height = config.window_height / 5 }
 
 -- Level Management
 
@@ -65,17 +64,31 @@ local function set_level (level_name, entry_name)
   local entry_object = level_object:getObject(entry_name)
   
   state.active_level = level_name
-  state.player.position = levels.getOrigin(entry_object)
-  state.player.exited = false
+  player.position = levels.getOrigin(entry_object)
+  player.exited = false
+  
+  projectiles = {}
+  next_projectile = 1
 end
+
+local function spawn() 
+  set_level(player.progress.spawn_location.room, player.progress.spawn_location.spawner)
+end
+
 
 -- Initialization
 
 local function initialize () 
-  set_level(state.player.spawn_location.room, state.player.spawn_location.spawner)
+  spawn()
 end
 
 -- Engine Hooks
+
+function love.keypressed (key, scancode, repeated)
+  if key == 'space' and not repeated then
+    spawn()
+  end
+end
 
 function love.load ()   
   love.window.setTitle(text.game_title)
@@ -84,157 +97,6 @@ function love.load ()
   initialize()
 end
 
-local function simulate (dt)
-  local left, right, up, down
-  
-  left = love.keyboard.isDown('a')
-  right = love.keyboard.isDown('d')
-  up = love.keyboard.isDown('w')
-  down = love.keyboard.isDown('s')
-  
-  if left then
-    player.velocity.x = player.velocity.x - config.player.acceleration * dt
-  end
-  
-  if right then
-    player.velocity.x = player.velocity.x + config.player.acceleration * dt
-  end
-  
-  player.velocity.x = player.velocity.x * ((1 - config.player.friction) ^ dt)
-  
-  local function jump (has_double_jump) 
-    player.on_ground = false
-    player.float_timer = config.player.float_time
-    player.velocity.y = -config.player.jump_impulse
-    
-    player.has_double_jump = has_double_jump
-    player.released_jump = false
-  end
-  
-  if player.on_ground and up then
-    jump(true)
-  end
-  
-  if down then
-    player.fall_through_timer = config.player.fall_through_time
-  else
-    player.fall_through_timer = player.fall_through_timer - dt
-  end
-  
-  if not player.on_ground then
-    if not up then
-      player.released_jump = true
-    elseif player.released_jump and player.has_double_jump then
-      jump(false)
-    end
-    
-    local gravity = config.player.gravity
-    
-    if player.float_timer > 0 and up then
-      gravity = config.player.float_gravity
-      player.float_timer = player.float_timer - dt
-    else
-      player.float_timer = 0
-    end
-    
-    player.velocity.y = player.velocity.y + gravity * dt
-  else
-    player.velocity.y = 0
-  end
-  
-  player.position.x = player.position.x + player.velocity.x * dt
-  player.position.y = player.position.y + player.velocity.y * dt
-  
-  -- check ground
-      
-  local floor_sensor_hoffset = 4
-  local floor_sensor_height = 4
-  local floor_sensor_margin = 4
-  
-  local suck_to_floor
-  
-  if player.on_ground then
-    suck_to_floor = 12
-  else
-    suck_to_floor = 0
-  end
-  
-  local left_floor, left_floor_distance = sensor.sense(level_object, player.position - vector(-floor_sensor_hoffset, floor_sensor_height), vector(0, 1), 16, player.fall_through_timer <= 0)
-  local right_floor, right_floor_distance = sensor.sense(level_object, player.position - vector(floor_sensor_hoffset, floor_sensor_height), vector(0, 1), 16, player.fall_through_timer <= 0)
-  
-  local floor = left_floor or right_floor
-  
-  local min_floor_distance, max_floor_distance
-  
-  if floor then  
-    min_floor_distance = math.min(left_floor_distance or right_floor_distance, right_floor_distance or left_floor_distance)
-    max_floor_distance = math.min(left_floor_distance or right_floor_distance, right_floor_distance or left_floor_distance)
-  end
-  
-  if player.velocity.y >= 0 then
-    if floor and min_floor_distance < (floor_sensor_margin + suck_to_floor) then
-      player.on_ground = true
-      player.position = player.position - vector(0, floor_sensor_margin - min_floor_distance)
-    elseif min_floor_distance == floor_sensor_margin then
-      player.on_ground = true
-    end
-    
-    if not floor or min_floor_distance > (floor_sensor_margin + suck_to_floor) then
-      player.on_ground = false
-    end
-  end
-  
-  -- check ceiling
-  
-  local ceiling_sensor_height = 24
-  local ceiling_sensor_margin = 8
-  
-  local ceiling, ceiling_distance = sensor.sense(level_object, player.position - vector(0, ceiling_sensor_height), vector(0, -1), 16)
-  
-  if ceiling and ceiling_distance < ceiling_sensor_margin then
-    player.position = player.position + vector(0, ceiling_sensor_margin - ceiling_distance)
-    if player.velocity.y < 0 then
-      player.velocity.y = 0
-    end
-  end
-  
-  -- check sides
-  
-  local side_margin = 8         -- minimum distance from player center to wall
-  local side_sensor = {8, 24}   -- heights of side sensors relative to player origin
-  
-  -- check left collision
-  
-  local left_wall, left_distance = sensor.sense(level_object, player.position - vector(0, side_sensor[1]), vector(-1, 0), 16)
-  
-  if not left_wall then
-    left_wall, left_distance = sensor.sense(level_object, player.position - vector(0, side_sensor[2]), vector(-1, 0), 16)
-  end
-  
-  if left_wall and left_distance < side_margin then
-    player.position = player.position + vector(side_margin - left_distance, 0)
-    if player.velocity.x < 0 then
-      player.velocity.x = 0
-    end
-  end
-    
-  -- check right collisions
-  
-  local right_wall, right_distance = sensor.sense(level_object, player.position - vector(0, side_sensor[1]), vector(1, 0), 16)
-  
-  if not right_wall then
-    right_wall, right_distance = sensor.sense(level_object, player.position - vector(0, side_sensor[2]), vector(1, 0), 16)
-  end
-  
-  if right_wall and right_distance < side_margin then
-    player.position = player.position - vector(side_margin - right_distance, 0)
-    if player.velocity.x > 0 then
-      player.velocity.x = 0
-    end
-  end
-  
-  state.time_error = state.time_error - dt
-end
 
 local function contains_player (object) 
   local player_minimum = player.position - config.player.origin
@@ -248,6 +110,24 @@ local function contains_player (object)
   elseif player_minimum.x > (object.x + object.width - config.player.size.x + fudge) then
     return false
   elseif player_minimum.y > (object.y + object.height - config.player.size.y + fudge) then
+    return false
+  else
+    return true
+  end
+end
+
+local function touches_player (object) 
+  local player_minimum = player.position - config.player.origin
+  
+  local fudge = 1
+  
+  if player_minimum.x + config.player.size.x < object.x then
+    return false
+  elseif player_minimum.y + config.player.size.y < object.y - fudge then
+    return false
+  elseif player_minimum.x > object.x + object.width then
+    return false
+  elseif player_minimum.y > object.y + object.height then
     return false
   else
     return true
@@ -271,22 +151,83 @@ end
 
 local function check_triggers () 
   for i, object in ipairs(level_object.objects) do
-    if contains_player(object) then
+    local contains = contains_player(object)
+    local touching = touches_player(object)
+    
+    if touching and object.type == 'killbox' then
+      spawn()
+    end
+    
+    if contains and object.type == 'exit' then
+      local object_origin = vector(object.x + object.width / 2, object.y / object.height)
+      local exiting = false
       
-      if object.type == 'exit' then
-        local object_origin = vector(object.x + object.width / 2, object.y / object.height)
-        local exiting = false
-        
-        if math.floor(object_origin.x) <= 0 then -- left exit
-          exiting = player.velocity.x < 0
-        elseif math.ceil(object_origin.x) >= level_object.width then -- right exit
-          exiting = player.velocity.x > 0
-        end
-        
-        if exiting then
-          return use_exit(object.name, object.properties.target)
-        end
+      if math.floor(object_origin.x) <= 0 then -- left exit
+        exiting = player.velocity.x < 0
+      elseif math.ceil(object_origin.x) >= level_object.width then -- right exit
+        exiting = player.velocity.x > 0
       end
+      
+      if exiting then
+        return use_exit(object.name, object.properties.target)
+      end
+    end
+    
+    if contains and object.type == 'spawn' then
+      if player.progress.spawn_location.room ~= state.active_level or player.progress.spawn_location.spawner ~= object.name then
+        player.progress.spawn_location.room = state.active_level
+        player.progress.spawn_location.spawner = object.name
+        
+        print('spawn set to: ' .. object.name .. ' in ' .. state.active_level)
+      end
+    end
+  end
+end
+
+local function update_weapon (dt) 
+  local blaster = player.blaster
+  
+  local shoot_left, shoot_right
+  
+  shoot_left = love.keyboard.isDown('left')
+  shoot_right = love.keyboard.isDown('right')
+  
+  local function shoot (dir)
+    blaster.cooldown = config.player.blaster_cooldown
+    blaster.released = false
+    
+    projectiles[next_projectile] = {
+      position = player.position - vector(dir * -8, 16),
+      velocity = vector(config.player.blaster_velocity * dir, 0),
+      direction = dir
+    }
+    
+    next_projectile = next_projectile + 1
+  end
+  
+  if not (shoot_left or shoot_right) then
+    blaster.released = true
+  end
+  
+  if blaster.cooldown > 0 then
+    blaster.cooldown = blaster.cooldown - dt
+  elseif blaster.released then
+    if shoot_left then
+      shoot(-1)
+    elseif shoot_right then
+      shoot(1)
+    end
+  end
+end
+
+local function update_projectiles (dt) 
+  for id, projectile in pairs(projectiles) do
+    projectile.position = projectile.position + projectile.velocity:scale(dt)
+    
+    local impact = sensor.sense(level_object, projectile.position, vector(projectile.direction, 0), 8)
+    
+    if impact then
+      projectiles[id] = nil
     end
   end
 end
@@ -295,8 +236,22 @@ function love.update (dt)
   state.time_error = state.time_error + dt
   
   while state.time_error > config.time_step do
-    simulate(config.time_step)
+    player_physics.simulate(player, level_object, config.time_step)
+    state.time_error = state.time_error - config.time_step
   end
+  
+  update_weapon(dt)
+  update_projectiles(dt)
+  
+  check_triggers()
+end
+
+local draw_player, draw_level, draw_projectiles
+local draw_watch_expressions, draw_map_wireframe
+
+function love.draw () 
+  
+  -- Update Camera
   
   camera.x = player.position.x - camera.width * 0.5
   camera.y = player.position.y - camera.height * 0.7
@@ -311,8 +266,6 @@ function love.update (dt)
     camera.y = 0
   end
   
-  print(tostring(camera_max))
-  
   if camera_max.x > level_object.width * config.tile_size then
     camera.x = level_object.width * config.tile_size - camera.width
   end
@@ -324,24 +277,26 @@ function love.update (dt)
   camera.x = math.floor(camera.x * camera.scale) / camera.scale
   camera.y = math.floor(camera.y * camera.scale) / camera.scale
   
-  check_triggers()
-end
-
-local draw_player, draw_level
-local draw_watch_expressions, draw_map_wireframe
-
-function love.draw () 
+  -- Draw Level
+  
   draw_level()
   draw_player()
+  draw_projectiles()
   
   -- draw_map_wireframe()
-  draw_watch_expressions()
 end
 
 function draw_player ()
-  local minimum = (state.player.position - config.player.origin):floor()
+  local minimum = (player.position - config.player.origin):floor()
   love.graphics.setColor(0xFF, 0xFF, 0xFF)
   love.graphics.rectangle("fill", (minimum.x - camera.x) * camera.scale, (minimum.y - camera.y) * camera.scale, config.player.size.x * camera.scale, config.player.size.y * camera.scale)
+end
+
+function draw_projectiles()
+  for id, projectile in pairs(projectiles) do
+    love.graphics.setColor(0xFF, 0xFF, 0x22)
+    love.graphics.ellipse("fill", (projectile.position.x - 4 - camera.x) * camera.scale, (projectile.position.y - 2 - camera.y) * camera.scale, 8 * camera.scale, 4 * camera.scale)
+  end
 end
 
 function draw_level ()
@@ -354,7 +309,21 @@ function draw_level ()
       love.graphics.setColor(unpack(color_array))
       
       if object.shape == "rectangle" then
-        love.graphics.rectangle("line", (object.x - camera.x) * camera.scale, (object.y - camera.y) * camera.scale, object.width * camera.scale, object.height * camera.scale)
+        love.graphics.rectangle("line", 
+          (object.x - camera.x) * camera.scale, 
+          (object.y - camera.y) * camera.scale, 
+          object.width * camera.scale,
+          object.height * camera.scale)
+        
+        if object.type == 'spawn' 
+          and state.active_level == player.progress.spawn_location.room 
+          and object.name == player.progress.spawn_location.spawner then
+            love.graphics.ellipse("line", 
+              (object.x + object.width / 2 - camera.x) * camera.scale, 
+              (object.y + object.height / 2 - camera.y) * camera.scale, 
+              object.width / 2 * camera.scale,
+              object.height / 2 * camera.scale)
+        end
       end
     end
   end
@@ -397,27 +366,6 @@ function draw_map_wireframe ()
             draw_wirebox(full_block_color, x, y)
         end
       end
-    end
-  end
-end
-
-function draw_watch_expressions () -- evaluate and render watch expressions
-  local label_col = 10 
-  local data_col = 250
-  
-  local line_height = 14
-  local base_line = 10
-  
-  love.graphics.setColor(0xFF, 0x00, 0xFF)
-  love.graphics.print("[watch expression]", label_col, base_line) 
-  love.graphics.print("= [value]", data_col, base_line) 
-      
-  for i, expr in ipairs(watch_expressions) do
-    if expr and #expr > 0 then
-      love.graphics.setColor(0xFF, 0xFF, 0xFF)
-      love.graphics.print(expr, label_col, base_line + line_height * i) 
-      love.graphics.setColor(0xAA, 0xFF, 0xFF)
-      love.graphics.print('= ' .. tostring(assert(loadstring('return ' .. expr))()), data_col, base_line + line_height * i)
     end
   end
 end

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <tileset name="tileset" tilewidth="16" tileheight="16" tilecount="400" columns="20">
- <image source="art/tileset.png" width="320" height="320"/>
+ <image source="res/art/tileset.png" width="320" height="320"/>
  <terraintypes>
   <terrain name="Wall" tile="0"/>
   <terrain name="Markings" tile="40"/>
@@ -36,4 +36,8 @@
  <tile id="65" terrain="1,1,1,2"/>
  <tile id="80" terrain="2,2,2,2"/>
  <tile id="81" terrain="1,1,1,1"/>
+ <tile id="100" terrain="2,2,2,2"/>
+ <tile id="101" terrain="2,2,2,2"/>
+ <tile id="120" terrain="2,2,2,2"/>
+ <tile id="121" terrain="2,2,2,2"/>
 </tileset>

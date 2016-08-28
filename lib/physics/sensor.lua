@@ -13,7 +13,7 @@ function sensor.sense (level, origin, offset, steps, sense_platforms)
     local platform_tile = level.layers.platforms:getTile(grid.x, grid.y)
     
     if sense_platforms and platform_tile and in_tile.y == 0 then
-      return platform_tile, i
+      return i
     elseif wall_tile and tiles[wall_tile].is_solid then
       local collision = true
       
@@ -26,10 +26,12 @@ function sensor.sense (level, origin, offset, steps, sense_platforms)
       end
       
       if collision then
-        return wall_tile, i
+        return i
       end
     end
   end
+  
+  return nil
 end
 
 return sensor

@@ -40,6 +40,7 @@ function crate_entity:draw (env) -- draw a crate entity
     quad = tiles.getQuad(tiles.named_tiles.crate)
   end
   
+  love.graphics.setColor(0xFF, 0xFF, 0xFF)
   love.graphics.draw(
     image,
     quad, 

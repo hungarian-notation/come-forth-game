@@ -1,5 +1,5 @@
 local config = require "config"
-local sensor = require "lib.physics.sensor"
+local sensor = require "lib.sensor"
 local vector = require "lib.vector"
 
 local projectile_entity = {} ; projectile_entity.__index = projectile_entity

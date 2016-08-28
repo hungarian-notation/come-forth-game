@@ -3,17 +3,7 @@ local entities = {}
 function entities.newWorld ()
   local world = { _next = 1, population = {} }
   
-  function world:create(entity)
-    print('created: ' .. tostring(entity))
-    
-    if not entity.update then
-      print(' NO UPDATE')
-    end
-    
-    if not entity.draw then
-      print(' NO DRAW')
-    end
-    
+  function world:create(entity)    
     entity.id = self._next
     self.population[entity.id] = entity
     self._next = self._next + 1

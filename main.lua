@@ -4,9 +4,7 @@ local text            = require "text.en"
 local levels          = require "lib.levels"
 local tiles           = require "lib.tiles"
 local vector          = require "lib.vector"
-local player_physics  = require "lib.physics.player"
-local sensor          = require "lib.physics.sensor"
-
+local sensor          = require "lib.sensor"
 local entities        = require "lib.entities"
 
 -- Game State

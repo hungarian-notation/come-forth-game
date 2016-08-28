@@ -295,7 +295,7 @@ end
 function draw_projectiles()
   for id, projectile in pairs(projectiles) do
     love.graphics.setColor(0xFF, 0xFF, 0x22)
-    love.graphics.ellipse("fill", (projectile.position.x - 4 - camera.x) * camera.scale, (projectile.position.y - 2 - camera.y) * camera.scale, 8 * camera.scale, 4 * camera.scale)
+    love.graphics.ellipse("fill", (projectile.position.x - camera.x) * camera.scale, (projectile.position.y - camera.y) * camera.scale, 8 * camera.scale, 4 * camera.scale)
   end
 end
 

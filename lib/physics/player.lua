@@ -5,7 +5,7 @@ local vector = require "lib.vector"
 
 local player_physics = {}
 
-function player_physics.simulate (player, level_object, dt)  
+function player_physics.simulate (player, env, dt)  
   
   local function jumpAbility () 
     if player.progress.high_jump then
@@ -95,8 +95,8 @@ function player_physics.simulate (player, level_object, dt)
     suck_to_floor = 0
   end
   
-  local left_floor_distance = sensor.sense(level_object, player.position - vector(-floor_sensor_hoffset, floor_sensor_height), vector(0, 1), 16, player.fall_through_timer <= 0)
-  local right_floor_distance = sensor.sense(level_object, player.position - vector(floor_sensor_hoffset, floor_sensor_height), vector(0, 1), 16, player.fall_through_timer <= 0)
+  local left_floor_distance = sensor.sense(env, player.position - vector(-floor_sensor_hoffset, floor_sensor_height), vector(0, 1), 16, player.fall_through_timer <= 0)
+  local right_floor_distance = sensor.sense(env, player.position - vector(floor_sensor_hoffset, floor_sensor_height), vector(0, 1), 16, player.fall_through_timer <= 0)
   
   local floor_distance
   
@@ -128,7 +128,7 @@ function player_physics.simulate (player, level_object, dt)
   local ceiling_sensor_height = 24
   local ceiling_sensor_margin = 8
   
-  local ceiling_distance = sensor.sense(level_object, player.position - vector(0, ceiling_sensor_height), vector(0, -1), 16)
+  local ceiling_distance = sensor.sense(env, player.position - vector(0, ceiling_sensor_height), vector(0, -1), 16)
   
   if ceiling_distance and ceiling_distance < ceiling_sensor_margin then
     player.position = player.position + vector(0, ceiling_sensor_margin - ceiling_distance)
@@ -144,10 +144,10 @@ function player_physics.simulate (player, level_object, dt)
   
   -- check left collision
   
-  local left_distance = sensor.sense(level_object, player.position - vector(0, side_sensor[1]), vector(-1, 0), 16)
+  local left_distance = sensor.sense(env, player.position - vector(0, side_sensor[1]), vector(-1, 0), 16)
   
   if not left_distance then
-    left_distance = sensor.sense(level_object, player.position - vector(0, side_sensor[2]), vector(-1, 0), 16)
+    left_distance = sensor.sense(env, player.position - vector(0, side_sensor[2]), vector(-1, 0), 16)
   end
   
   if left_distance and left_distance < side_margin then
@@ -159,10 +159,10 @@ function player_physics.simulate (player, level_object, dt)
     
   -- check right collisions
   
-  local right_distance = sensor.sense(level_object, player.position - vector(0, side_sensor[1]), vector(1, 0), 16)
+  local right_distance = sensor.sense(env, player.position - vector(0, side_sensor[1]), vector(1, 0), 16)
   
   if not right_distance then
-    right_distance = sensor.sense(level_object, player.position - vector(0, side_sensor[2]), vector(1, 0), 16)
+    right_distance = sensor.sense(env, player.position - vector(0, side_sensor[2]), vector(1, 0), 16)
   end
   
   if right_distance and right_distance < side_margin then

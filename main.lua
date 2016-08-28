@@ -7,14 +7,28 @@ local vector          = require "lib.vector"
 local player_physics  = require "lib.physics.player"
 local sensor          = require "lib.physics.sensor"
 
+local entities        = require "lib.entities"
+
 -- Game State
 
-local state = {
+local state, player, camera, world, level_object
+
+local function get_env ()
+  return {
+    player = player,
+    camera = camera,
+    level = level_object,
+    state = state,
+    world = world
+  }
+end
+
+state = {
   time_error = 0,
   active_level = nil
 }
 
-local player = {
+player = {
   position            = vector.zero(),
   velocity            = vector.zero(),
   
@@ -45,14 +59,18 @@ local player = {
   }
 }
 
-local next_projectile = 1
-local projectiles = {}
+local function reset_world ()
+  world = entities.newWorld()
+end
 
-local camera = { x = -100, y = -10, scale = 5, width = config.window_width / 5, height = config.window_height / 5 }
+reset_world()
+ 
+camera = { x = -100, y = -10, scale = 5, width = config.window_width / 5, height = config.window_height / 5 }
 
 -- Level Management
 
-local level_object = nil
+level_object = nil
+
 local level_tilemap = nil
 
 local function set_level (level_name, entry_name)
@@ -67,14 +85,12 @@ local function set_level (level_name, entry_name)
   player.position = levels.getOrigin(entry_object)
   player.exited = false
   
-  projectiles = {}
-  next_projectile = 1
+  reset_world()
 end
 
 local function spawn() 
   set_level(player.progress.spawn_location.room, player.progress.spawn_location.spawner)
 end
-
 
 -- Initialization
 
@@ -196,13 +212,10 @@ local function update_weapon (dt)
     blaster.cooldown = config.player.blaster_cooldown
     blaster.released = false
     
-    projectiles[next_projectile] = {
+    require('lib.entities.projectile').create(get_env(), {
       position = player.position - vector(dir * -8, 16),
-      velocity = vector(config.player.blaster_velocity * dir, 0),
       direction = dir
-    }
-    
-    next_projectile = next_projectile + 1
+    })
   end
   
   if not (shoot_left or shoot_right) then
@@ -220,33 +233,32 @@ local function update_weapon (dt)
   end
 end
 
-local function update_projectiles (dt) 
-  for id, projectile in pairs(projectiles) do
-    projectile.position = projectile.position + projectile.velocity:scale(dt)
-    
-    local impact = sensor.sense(level_object, projectile.position, vector(projectile.direction, 0), 8)
-    
-    if impact then
-      projectiles[id] = nil
-    end
+
+local function update_world (dt) 
+  local env = get_env()
+  
+  for id, entity in world:each() do
+    entity:update(dt, env)
   end
 end
 
 function love.update (dt)
   state.time_error = state.time_error + dt
   
+  local env = get_env()
+  
   while state.time_error > config.time_step do
-    player_physics.simulate(player, level_object, config.time_step)
+    player_physics.simulate(player, env, config.time_step)
     state.time_error = state.time_error - config.time_step
   end
   
   update_weapon(dt)
-  update_projectiles(dt)
+  update_world(dt)
   
   check_triggers()
 end
 
-local draw_player, draw_level, draw_projectiles
+local draw_player, draw_level, draw_world
 local draw_watch_expressions, draw_map_wireframe
 
 function love.draw () 
@@ -281,7 +293,7 @@ function love.draw ()
   
   draw_level()
   draw_player()
-  draw_projectiles()
+  draw_world()
   
   -- draw_map_wireframe()
 end
@@ -292,10 +304,13 @@ function draw_player ()
   love.graphics.rectangle("fill", (minimum.x - camera.x) * camera.scale, (minimum.y - camera.y) * camera.scale, config.player.size.x * camera.scale, config.player.size.y * camera.scale)
 end
 
-function draw_projectiles()
-  for id, projectile in pairs(projectiles) do
-    love.graphics.setColor(0xFF, 0xFF, 0x22)
-    love.graphics.ellipse("fill", (projectile.position.x - camera.x) * camera.scale, (projectile.position.y - camera.y) * camera.scale, 8 * camera.scale, 4 * camera.scale)
+function draw_world()
+  local env = get_env()
+  
+  for id, entity in world:each() do
+    if entity.draw then
+      entity:draw(env)
+    end
   end
 end
 

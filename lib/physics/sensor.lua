@@ -3,14 +3,14 @@ local tiles = require "lib.tiles"
 
 local sensor = {}
 
-function sensor.sense (level, origin, offset, steps, sense_platforms)
+function sensor.sense (env, origin, offset, steps, sense_platforms)
   for i = 0, steps do
     local pos   = (origin + offset:scale(i)):floor()
     local grid    = pos:scale(1 / 16):floor()
     local in_tile = vector(pos.x % 16, pos.y % 16):floor()
     
-    local wall_tile = level.layers.walls:getTile(grid.x, grid.y)
-    local platform_tile = level.layers.platforms:getTile(grid.x, grid.y)
+    local wall_tile = env.level.layers.walls:getTile(grid.x, grid.y)
+    local platform_tile = env.level.layers.platforms:getTile(grid.x, grid.y)
     
     if sense_platforms and platform_tile and in_tile.y == 0 then
       return i

@@ -5,4 +5,5 @@
  </objecttype>
  <objecttype name="spawn" color="#55aaff"/>
  <objecttype name="killbox" color="#ff0004"/>
+ <objecttype name="crate" color="#ffaa00"/>
 </objecttypes>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.0" orientation="orthogonal" renderorder="right-down" width="36" height="36" tilewidth="16" tileheight="16" nextobjectid="30">
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="36" height="36" tilewidth="16" tileheight="16" nextobjectid="49">
  <tileset firstgid="1" source="../../tileset.tsx"/>
  <layer name="background" width="36" height="36">
   <data encoding="csv">
@@ -141,5 +141,12 @@
   <object id="21" type="killbox" x="368" y="256" width="16" height="32"/>
   <object id="25" type="killbox" x="192" y="256" width="16" height="32"/>
   <object id="26" type="killbox" x="256" y="560" width="64" height="16"/>
+  <object id="35" type="crate" x="320" y="336" width="16" height="16"/>
+  <object id="43" type="crate" x="320" y="320" width="16" height="16"/>
+  <object id="44" type="crate" x="336" y="336" width="16" height="16"/>
+  <object id="45" type="crate" x="336" y="320" width="16" height="16"/>
+  <object id="46" type="crate" x="352" y="352" width="16" height="16"/>
+  <object id="47" type="crate" x="336" y="352" width="16" height="16"/>
+  <object id="48" type="crate" x="320" y="352" width="16" height="16"/>
  </objectgroup>
 </map>

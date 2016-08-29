@@ -127,6 +127,11 @@ function scarab_entity:computeProgress ()
     end
   end
   
+  if not current_segment then
+    print('scarab bug: no current segment')
+    return
+  end
+  
   if direction == 1 then
     self.position = current_segment.from + current_segment:getDirection():scale(remaining)
   else

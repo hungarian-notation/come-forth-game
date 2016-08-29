@@ -11,8 +11,14 @@ local config = {
   tileset_rows        = 20,
   tileset_columns     = 20,
     
-  window_width        = 1600,
-  window_height       = 900,
+  window_width        = 800,
+  window_height       = 600,
+    
+  text_display = {
+    width = 700,
+    y = 100,
+    font = 'res/blocktopia.ttf'
+  },
     
   player = {  
     respawn_time      = 3,

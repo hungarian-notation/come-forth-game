@@ -10,6 +10,7 @@ local sensor          = require "lib.sensor"
 local entities        = require "lib.entities"
 
 local tiled           = require "lib.levels.tiled"
+local triggers        = require "lib.triggers"
 
 -- Game State
 
@@ -33,6 +34,8 @@ local env = {
       ankh_stars        = false
   },
   
+  triggered = {},
+  
   destructibles = require "lib.destructibles",
   
   state = {
@@ -42,16 +45,36 @@ local env = {
   
   player = nil,
   
+  message = {
+    text = nil,
+    style = nil,
+    duration = nil,
+    
+    _active_font_size = nil
+  },
+  
   camera = { 
     x = -100, 
     y = -10, 
     
-    scale = 5, 
+    scale = 3, 
     
-    width = config.window_width / 5, 
-    height = config.window_height / 5 
+    width = config.window_width / 3, 
+    height = config.window_height / 3 
   }
 }
+
+function env.message:show (args)
+  self.text = assert(args.text, 'must provide text')
+  self.duration = args.duration or 5
+  
+  self.style = args.style or {}
+  
+  self.style.color = self.style.color or { 0xFF, 0xFF, 0xFF }
+  self.style.size = self.style.size or 32
+  
+  print"SHOW TEXT"
+end
 
 local function get_env () -- DEPRECATED
   return env
@@ -195,6 +218,15 @@ local function check_triggers ()
     local contains = contains_player(object)
     local touching = touches_player(object)
     
+    if object.type == 'trigger' then
+      if contains or (not object.properties.on_contains and touching) then
+        if not env.triggered[object.name] then
+          env.triggered[object.name] = true
+          triggers[object.name](env, object)
+        end
+      end
+    end
+    
     if touching and object.type == 'killbox' then
       env.player:kill(env)
     end
@@ -228,6 +260,13 @@ end
 local update_world
 
 function love.update (dt)
+  if env.message.duration and env.message.duration > 0 then
+    env.message.duration = env.message.duration - dt
+  else
+    env.message.text = nil
+    env.message.duration = 0
+  end
+  
   env.world:update(dt, get_env())
   
   check_triggers()
@@ -275,6 +314,25 @@ function love.draw ()
         )
       end
     end
+  end
+  
+  if env.message.duration and env.message.duration > 0 and env.message.text then
+    if not env.message._active_font_size or env.message.style.size ~= env.message._active_font_size then
+      env.message._active_font_size = env.message.style.size
+      env.message._font = love.graphics.newFont(config.text_display.font, env.message.style.size)
+    end
+    
+    love.graphics.setColor(unpack(env.message.style.color))
+    love.graphics.setFont(env.message._font)
+    love.graphics.printf(
+      env.message.text, 
+      
+      (config.window_width - config.text_display.width) / 2, 
+      config.text_display.y,
+      
+      config.text_display.width,
+      env.message.style.align or 'center'
+    )
   end
 end
 

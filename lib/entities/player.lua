@@ -69,6 +69,14 @@ function player_entity:update (dt, env)
 end
 
 function player_entity:kill (env)
+  env.message:show {
+      text = "You Died.",
+      style = {
+          size = 64,
+          color = { 0xDD, 0x22, 0x22 }
+      }
+  }
+  
   env.world:destroy(self)
   env.player = nil
 end

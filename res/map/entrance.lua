@@ -8,7 +8,7 @@ return {
   height = 36,
   tilewidth = 16,
   tileheight = 16,
-  nextobjectid = 61,
+  nextobjectid = 79,
   properties = {},
   tilesets = {
     {
@@ -697,6 +697,64 @@ return {
           rotation = 0,
           visible = true,
           properties = {}
+        },
+        {
+          id = 65,
+          name = "need_better_jump",
+          type = "trigger",
+          shape = "rectangle",
+          x = 339,
+          y = 447,
+          width = 66.5,
+          height = 45,
+          rotation = 0,
+          visible = true,
+          properties = {}
+        },
+        {
+          id = 69,
+          name = "need_blaster",
+          type = "trigger",
+          shape = "rectangle",
+          x = 20.5,
+          y = 471.5,
+          width = 57.5,
+          height = 91.5,
+          rotation = 0,
+          visible = true,
+          properties = {
+            ["on_contains"] = true
+          }
+        },
+        {
+          id = 73,
+          name = "approaching_blaster",
+          type = "trigger",
+          shape = "rectangle",
+          x = 480,
+          y = 464,
+          width = 64,
+          height = 80,
+          rotation = 0,
+          visible = true,
+          properties = {
+            ["on_contains"] = true
+          }
+        },
+        {
+          id = 76,
+          name = "shoot_tutorial",
+          type = "trigger",
+          shape = "rectangle",
+          x = 16,
+          y = 448,
+          width = 144,
+          height = 112,
+          rotation = 0,
+          visible = true,
+          properties = {
+            ["on_contains"] = true
+          }
         }
       }
     }

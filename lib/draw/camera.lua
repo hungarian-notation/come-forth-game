@@ -3,6 +3,10 @@ local vector          = require "lib.vector"
 
 local camera = {}
 
+function camera.update (dt, env)
+  
+end
+
 function camera.resolve (env) -- keeps the camera pointing at the player, if a player entity is active
   if env.player then
     env.camera.x = env.player.position.x - env.camera.width * 0.5

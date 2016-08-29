@@ -1,4 +1,5 @@
 local config          = require "config"
+local textbox         = require "lib.textbox"
 
 local environment = {}
 
@@ -36,13 +37,7 @@ function environment.create ()
     
     player = nil,
     
-    message = {
-      text = nil,
-      style = nil,
-      duration = nil,
-      
-      _active_font_size = nil
-    },
+    textbox = textbox.initialize(),
     
     camera = { 
       x = -100, 
@@ -54,14 +49,6 @@ function environment.create ()
       height = config.window_height / 3 
     }
   }
-  
-  function env.message:show (args)
-    self.text = assert(args.text, 'must provide text')
-    self.duration = args.duration or 5
-    self.style = args.style or {}
-    self.style.color = self.style.color or { 0xFF, 0xFF, 0xFF }
-    self.style.size = self.style.size or 32
-  end
   
   return env
 end

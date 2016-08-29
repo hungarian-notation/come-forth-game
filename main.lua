@@ -101,13 +101,7 @@ function love.load ()
 end
 
 function love.update (dt)
-  if env.message.duration and env.message.duration > 0 then
-    env.message.duration = env.message.duration - dt
-  else
-    env.message.text = nil
-    env.message.duration = 0
-  end
-  
+  env.textbox:update(dt, env)
   env.world:update(dt, env)
   
   check_triggers()
@@ -115,7 +109,6 @@ function love.update (dt)
   if not env.player then
     env.respawn_time = env.respawn_time - dt    
     if env.respawn_time < 0 then
-      
       spawn()
     end
   end
@@ -132,7 +125,7 @@ function love.draw ()
   
   env.level:drawOverlay(env)
   
-  draw_textbox()
+  env.textbox:draw(env)
 end
 
 -- Game State Control
@@ -203,26 +196,5 @@ function check_triggers ()
         end
       end
     end
-  end
-end
-
-function draw_textbox () 
-  if env.message.duration and env.message.duration > 0 and env.message.text then
-    if not env.message._active_font_size or env.message.style.size ~= env.message._active_font_size then
-      env.message._active_font_size = env.message.style.size
-      env.message._font = love.graphics.newFont(config.text_display.font, env.message.style.size)
-    end
-    
-    love.graphics.setColor(unpack(env.message.style.color))
-    love.graphics.setFont(env.message._font)
-    love.graphics.printf(
-      env.message.text, 
-      
-      (config.window_width - config.text_display.width) / 2, 
-      config.text_display.y,
-      
-      config.text_display.width,
-      env.message.style.align or 'center'
-    )
   end
 end

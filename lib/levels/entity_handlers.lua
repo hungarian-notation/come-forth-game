@@ -7,6 +7,7 @@ local function noop () end
 local entity_handlers = {
   spawn = noop,
   exit = noop,
+  killbox = noop,
   patrol_facing = noop -- this is simply referenced by its patrol
 }
 

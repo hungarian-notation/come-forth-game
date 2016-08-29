@@ -1,6 +1,8 @@
 local config          = require "config"
 local text            = require "text.en"
 
+local keys            = require "keybindings"
+
 local levels          = require "lib.levels"
 local tiles           = require "lib.tiles"
 local vector          = require "lib.vector"
@@ -106,11 +108,11 @@ end
 -- Engine Hooks
 
 function love.keypressed (key, scancode, repeated)
-  if key == 'f4' then
+  if key == keys.debug_mode then
     env.debug = not env.debug
   end
   
-  if env.debug and key == 'space' and not repeated then
+  if env.debug and key == keys.force_respawn and not repeated then
     spawn()
   end
 end

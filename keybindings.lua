@@ -6,10 +6,13 @@ return {
   
   diagonal_aim = 'lshift',
   
+  shoot = 'l',
   jump =  ';',
+  
   drop =  's',
   
-  shoot = 'l',
+  interact = 'enter',
   
-  interact = 'enter'
+  debug_mode = 'f4',
+  force_respawn = 'k' -- only works in debug mode
 }

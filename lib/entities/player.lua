@@ -1,10 +1,10 @@
-local keys = require "keybindings"
+local keys      = require "keybindings"
 
-local config = require "config"
-local vector = require "lib.vector"
-local sensor = require "lib.sensor"
+local config    = require "config"
+local vector    = require "lib.vector"
+local sensor    = require "lib.sensor"
 
-local entities = require "lib.entities"
+local entities  = require "lib.entities"
 
 local player_entity = {} ; player_entity.__index = player_entity
 

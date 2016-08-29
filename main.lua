@@ -15,6 +15,7 @@ local env = {
   debug = false,
   level = nil,
   world = nil,
+  
   respawn_time = 3,
   
   progress = {
@@ -63,6 +64,14 @@ reset_world()
 -- Level Management
 
 local function set_level (level_name, entry_name)
+  local player_velocity
+  
+  if env.player then 
+    player_velocity = env.player.velocity
+  else
+    player_velocity = vector.zero()
+  end
+  
   reset_world()
   
   local definition = require("res.map." .. level_name)
@@ -77,7 +86,8 @@ local function set_level (level_name, entry_name)
   env.level:initialize(env)
   
   env.player = (require "lib.entities.player").create(get_env(), {
-    position = levels.getOrigin(entry_object)
+    position = levels.getOrigin(entry_object),
+    velocity = player_velocity
   })
 end
 

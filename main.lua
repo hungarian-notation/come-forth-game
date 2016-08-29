@@ -240,6 +240,7 @@ end
 
 function draw_level () -- draws the tilemap and any placeholder boxes for level objects
   if env.level then
+    love.graphics.setLineWidth(2 * env.camera.scale)
     love.graphics.setColor(0xFF, 0xFF, 0xFF)
     love.graphics.draw(env.level.tilemap, -env.camera.x * env.camera.scale, -env.camera.y * env.camera.scale, 0, env.camera.scale, env.camera.scale)
         
@@ -264,7 +265,21 @@ function draw_level () -- draws the tilemap and any placeholder boxes for level 
               object.height / 2 * env.camera.scale)
         end
       elseif object.shape == 'polyline' then
-      
+        local vertices = #object.polyline
+        
+        local origin = vector(object)
+          
+        for i = 1, vertices - 1 do
+          local from = vector(object.polyline[i]) + origin
+          local to = vector(object.polyline[i + 1]) + origin
+          
+          love.graphics.line(
+            (from.x - env.camera.x) * env.camera.scale, 
+            (from.y - env.camera.y) * env.camera.scale,
+            (to.x - env.camera.x) * env.camera.scale, 
+            (to.y - env.camera.y) * env.camera.scale
+          )
+        end
       end
     end
   end

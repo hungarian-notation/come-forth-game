@@ -1,8 +1,11 @@
 local config = require "config"
+
 local tiled = require "lib.levels.tiled"
 local layer = require "lib.levels.layer"
 local tiles = require "lib.tiles"
 local vector = require "lib.vector"
+
+local level_entities = require "lib.levels.entities"
 
 local level = {} ; level.__index = level 
 
@@ -31,11 +34,10 @@ end
 
 function level:initialize (env)
   for i, object in pairs(self.objects) do
-    if object.type == 'crate' then
-      (require "lib.entities.crate").create(env, { 
-          position = vector(object.x, object.y),
-          object_id = object.id
-      })
+    if level_entities[object.type] then
+      level_entities[object.type](env, object)
+    else
+      print('no factory for type ' .. tostring(object.type))
     end
   end
 end

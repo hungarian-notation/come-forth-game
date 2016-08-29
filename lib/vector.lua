@@ -6,6 +6,9 @@ local vector_metatable = {} ; setmetatable(vector, vector_metatable)
 function vector.new (x, y)
   local self = setmetatable({}, vector)
   
+  assert(x and type(x) == 'number', 'missing x coordinate')
+  assert(y and type(y) == 'number', 'missing y coordinate')
+  
   self.x = x
   self.y = y
   
@@ -27,7 +30,11 @@ function vector_metatable.__call (table, ...)
     return vector.zero()
   elseif #args == 1 then
     if type(args[1] == "table") then
-      return vector.new(unpack(args[1]))
+      if args[1].x and args[1].y then
+        return vector.new(args[1].x, args[1].y)
+      else
+        return vector.new(unpack(args[1]))
+      end
     else
       error('expected single argument to be an array-like table')
     end

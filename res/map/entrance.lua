@@ -8,7 +8,7 @@ return {
   height = 36,
   tilewidth = 16,
   tileheight = 16,
-  nextobjectid = 22,
+  nextobjectid = 26,
   properties = {},
   tilesets = {
     {
@@ -413,6 +413,45 @@ return {
             { x = 240, y = 0 },
             { x = 400, y = 0 }
           },
+          properties = {}
+        },
+        {
+          id = 23,
+          name = "",
+          type = "crate",
+          shape = "rectangle",
+          x = 16,
+          y = 480,
+          width = 16,
+          height = 16,
+          rotation = 0,
+          visible = true,
+          properties = {}
+        },
+        {
+          id = 24,
+          name = "",
+          type = "crate",
+          shape = "rectangle",
+          x = 16,
+          y = 496,
+          width = 16,
+          height = 16,
+          rotation = 0,
+          visible = true,
+          properties = {}
+        },
+        {
+          id = 25,
+          name = "",
+          type = "crate",
+          shape = "rectangle",
+          x = 16,
+          y = 512,
+          width = 16,
+          height = 16,
+          rotation = 0,
+          visible = true,
           properties = {}
         }
       }

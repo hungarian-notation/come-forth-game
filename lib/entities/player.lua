@@ -1,3 +1,5 @@
+local keys = require "keybindings"
+
 local config = require "config"
 local vector = require "lib.vector"
 local sensor = require "lib.sensor"
@@ -11,6 +13,9 @@ function player_entity.create (env, args)
     position            = assert(args.position, 'args must contain position vector'),
     origin              = config.player.origin,
     size                = config.player.size,
+    
+    facing              = vector.zero(),
+    stance              = 1,
     
     velocity            = args.velocity or vector.zero(),
     
@@ -38,44 +43,114 @@ function player_entity:update (dt, env)
   end
   
   self:update_weapon(dt, env)
+  self:update_aim()
+end
+
+function player_entity:update_aim ()
+  local left_input, right_input, up_input, down_input, diagonal_aim_input, both_horizonal
+
+  left_input = love.keyboard.isDown(keys.left_directional)
+  right_input = love.keyboard.isDown(keys.right_directional)
+  
+  up_input = love.keyboard.isDown(keys.up_directional)
+  down_input = love.keyboard.isDown(keys.down_directional)
+  
+  diagonal_aim_input = love.keyboard.isDown(keys.diagonal_aim)
+  
+  both_horizonal = left_input and right_input
+  
+  if both_horizonal then -- normalize multiple horizontal inputs
+    if self.facing.x == -1 then 
+      right_input = false
+    elseif self.facing.x == 1 then
+      left_input = false
+    end
+  end
+  
+  if up_input and down_input then -- normalize multiple vertical inputs
+    if self.facing.y == -1 then 
+      down_input = false
+    elseif self.facing.y == 1 then
+      up_input = false
+    end
+  end
+  
+  if up_input then
+    self.facing.y = -1
+  elseif down_input then
+    self.facing.y = 1
+  elseif not diagonal_aim_input then
+    self.facing.y = 0
+  end
+  
+  if both_horizonal and up_input then
+    self.facing.x = 0
+  elseif left_input then
+    self.facing.x = -1
+    self.stance = -1
+  elseif right_input then
+    self.facing.x = 1
+    self.stance = 1
+  elseif (not up_input or down_input) or (diagonal_aim_input) then
+    self.facing.x = self.stance
+  else
+    self.facing.x = 0
+  end
+  
+  if diagonal_aim_input and self.facing.y == 0 then
+    self.facing.y = -1
+  end
 end
 
 function player_entity:draw (env)
-  local minimum = (self.position - config.player.origin):floor()
+  self:update_aim()
+  
+  local minimum = (self.position - self.origin):floor()
+  
   love.graphics.setColor(0xFF, 0xFF, 0xFF)
+  
   love.graphics.rectangle("fill", (minimum.x - env.camera.x) * env.camera.scale, (minimum.y - env.camera.y) * env.camera.scale, config.player.size.x * env.camera.scale, config.player.size.y * env.camera.scale)
+  
+  local offset = self.facing:normal():scale(8 * 1.4)
+  local center = minimum + self.size:scale(0.5)
+  local looking_at = center + offset
+  
+  love.graphics.setLineWidth(3 * env.camera.scale)
+  love.graphics.setColor(0xAA, 0xAA, 0xAA)
+  love.graphics.line((center.x - env.camera.x) * env.camera.scale, (center.y - env.camera.y) * env.camera.scale, (looking_at.x - env.camera.x) * env.camera.scale, (looking_at.y - env.camera.y) * 
+env.camera.scale)
+  
+  
+  love.graphics.setLineWidth(8)
 end
 
 function player_entity:update_weapon (dt, env) 
   local blaster = self.blaster
   
-  local shoot_left, shoot_right
+  local shoot_button = love.keyboard.isDown(keys.shoot)
   
-  shoot_left = love.keyboard.isDown('left')
-  shoot_right = love.keyboard.isDown('right')
-  
-  local function shoot (dir)
+  local function shoot (aim_direction)
     blaster.cooldown = config.player.blaster_cooldown
     blaster.released = false
     
+    local offset = aim_direction:normal():scale(8 * 1.4)
+    local center = (self.position - self.origin) + self.size:scale(0.5)
+    local projectile_origin = center + offset
+    
     require('lib.entities.projectile').create(env, {
-      position = self.position - vector(dir * -8, 16),
-      direction = dir
+      position = projectile_origin,
+      direction = aim_direction
     })
   end
   
-  if not (shoot_left or shoot_right) then
+  if not shoot_button then
     blaster.released = true
   end
   
   if blaster.cooldown > 0 then
     blaster.cooldown = blaster.cooldown - dt
-  elseif blaster.released then
-    if shoot_left then
-      shoot(-1)
-    elseif shoot_right then
-      shoot(1)
-    end
+  elseif shoot_button then
+    shoot(self.facing)
   end
 end
 
@@ -88,18 +163,25 @@ function player_entity:simulate_physics (dt, env)
     end
   end
   
-  local left, right, up, down
+  local left_input, right_input, jump_input, drop_input
   
-  left = love.keyboard.isDown('a')
-  right = love.keyboard.isDown('d')
-  up = love.keyboard.isDown('w')
-  down = love.keyboard.isDown('s')
+  left_input = love.keyboard.isDown(keys.left_directional)
+  right_input = love.keyboard.isDown(keys.right_directional)
   
-  if left then
-    self.velocity.x = self.velocity.x - config.player.acceleration * dt
+  jump_input = love.keyboard.isDown(keys.jump)
+  drop_input = love.keyboard.isDown(keys.drop)
+  
+  if left_input and right_input then -- normalize multiple horizontal inputs
+    if self.stance == -1 then 
+      right_input = false
+    elseif self.stance == 1 then
+      left_input = false
+    end
   end
   
-  if right then
+  if left_input then
+    self.velocity.x = self.velocity.x - config.player.acceleration * dt
+  elseif right_input then
     self.velocity.x = self.velocity.x + config.player.acceleration * dt
   end
   
@@ -120,18 +202,18 @@ function player_entity:simulate_physics (dt, env)
     self._jump_released = false
   end
   
-  if self._on_ground and up then
+  if self._on_ground and jump_input then
     jump(true)
   end
   
-  if down then
+  if drop_input then
     self._drop_tmr = config.player.fall_through_time
   else
     self._drop_tmr = self._drop_tmr - dt
   end
   
   if not self._on_ground then
-    if not up then
+    if not jump_input then
       self._jump_released = true
     elseif self._jump_released and self._first_jump and env.progress.double_jump then
       jump(false)
@@ -139,7 +221,7 @@ function player_entity:simulate_physics (dt, env)
     
     local gravity = config.player.gravity
     
-    if self._float_tmr > 0 and up then
+    if self._float_tmr > 0 and jump_input then
       gravity = jumpAbility().float_gravity
       self._float_tmr = self._float_tmr - dt
     else
@@ -259,6 +341,7 @@ function player_entity:simulate_physics (dt, env)
   
   if right_distance and right_distance < side_margin then
     self.position = self.position - vector(side_margin - right_distance, 0)
+    
     if self.velocity.x > 0 then
       self.velocity.x = 0
     end

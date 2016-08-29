@@ -8,7 +8,7 @@ return {
   height = 36,
   tilewidth = 16,
   tileheight = 16,
-  nextobjectid = 13,
+  nextobjectid = 22,
   properties = {},
   tilesets = {
     {
@@ -395,42 +395,24 @@ return {
           }
         },
         {
-          id = 10,
+          id = 21,
           name = "",
-          type = "crate",
-          shape = "rectangle",
-          x = 16,
-          y = 480,
-          width = 16,
-          height = 16,
+          type = "patrol_enemy",
+          shape = "polyline",
+          x = 128,
+          y = 240,
+          width = 0,
+          height = 0,
           rotation = 0,
           visible = true,
-          properties = {}
-        },
-        {
-          id = 11,
-          name = "",
-          type = "crate",
-          shape = "rectangle",
-          x = 16,
-          y = 496,
-          width = 16,
-          height = 16,
-          rotation = 0,
-          visible = true,
-          properties = {}
-        },
-        {
-          id = 12,
-          name = "",
-          type = "crate",
-          shape = "rectangle",
-          x = 16,
-          y = 512,
-          width = 16,
-          height = 16,
-          rotation = 0,
-          visible = true,
+          polyline = {
+            { x = 0, y = 0 },
+            { x = 160, y = 0 },
+            { x = 160, y = 48 },
+            { x = 240, y = 48 },
+            { x = 240, y = 0 },
+            { x = 400, y = 0 }
+          },
           properties = {}
         }
       }

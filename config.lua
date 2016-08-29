@@ -25,7 +25,7 @@ local config = {
     jump_attenuation  = 0.6,
     
     blaster_cooldown  = 0.2,
-    blaster_velocity  = 300,
+    blaster_velocity  = 400,
     
     jump = {
       impulse         = 200,     

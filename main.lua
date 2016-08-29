@@ -263,6 +263,8 @@ function draw_level () -- draws the tilemap and any placeholder boxes for level 
               object.width / 2 * env.camera.scale,
               object.height / 2 * env.camera.scale)
         end
+      elseif object.shape == 'polyline' then
+      
       end
     end
   end

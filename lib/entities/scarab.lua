@@ -4,10 +4,10 @@ local segment   = require "lib.segment"
 local sensor    = require "lib.sensor"
 local tiles     = require "lib.tiles"
 
-local patroller_entity = {} ; patroller_entity.__index = patroller_entity
+local scarab_entity = {} ; scarab_entity.__index = scarab_entity
 local quad
 
-function patroller_entity.create (env, args) 
+function scarab_entity.create (env, args) 
   
   -- initialize entity
   
@@ -31,7 +31,7 @@ function patroller_entity.create (env, args)
     is_deadly       = true,
     
     timer           = 0
-  }, patroller_entity)
+  }, scarab_entity)
 
   instance:compute_path()
   
@@ -42,13 +42,13 @@ function patroller_entity.create (env, args)
   end
 end
 
-function patroller_entity:shoot (env, projectile)
+function scarab_entity:shoot (env, projectile)
   env.world:destroy(self)
   env.destructibles:destroy(env.level.name, self.object_id)
   return true
 end
 
-function patroller_entity:compute_path ()  
+function scarab_entity:compute_path ()  
   self.path_length = 0
   
   if self.patrol_path[1] == self.patrol_path[#self.patrol_path] then
@@ -64,7 +64,7 @@ function patroller_entity:compute_path ()
   self.patrol_duration = self.path_length / config.enemies.patroller_speed
 end
 
-function patroller_entity:update (dt, env)
+function scarab_entity:update (dt, env)
   self.timer = self.timer + dt
   
   if self.patrol_mode == 'bounce' then
@@ -84,7 +84,7 @@ function patroller_entity:update (dt, env)
   -- update entity
 end
 
-function patroller_entity:computeProgress ()
+function scarab_entity:computeProgress ()
   local distance = self.timer * config.enemies.patroller_speed
   
   if distance > self.path_length then
@@ -140,7 +140,7 @@ function patroller_entity:computeProgress ()
   self.minimum = center - self.size:scale(1/2)
 end
 
-function patroller_entity:draw (env)
+function scarab_entity:draw (env)
   if not quad then
     quad = tiles.getQuad(tiles.named_tiles.scarab)
   end
@@ -172,4 +172,4 @@ function patroller_entity:draw (env)
   )
 end
 
-return patroller_entity
+return scarab_entity

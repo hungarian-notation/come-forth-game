@@ -8,7 +8,7 @@ return {
   height = 36,
   tilewidth = 16,
   tileheight = 16,
-  nextobjectid = 49,
+  nextobjectid = 51,
   properties = {},
   tilesets = {
     {
@@ -436,7 +436,7 @@ return {
         {
           id = 34,
           name = "",
-          type = "patrol",
+          type = "scarab",
           shape = "polyline",
           x = 128,
           y = 240,
@@ -452,15 +452,12 @@ return {
             { x = 240, y = 0 },
             { x = 400, y = 0 }
           },
-          properties = {
-            ["enemy_type"] = "scarab",
-            ["start_vertex"] = 1
-          }
+          properties = {}
         },
         {
           id = 38,
           name = "",
-          type = "patrol",
+          type = "scarab",
           shape = "polyline",
           x = 240,
           y = 336,
@@ -485,7 +482,7 @@ return {
         {
           id = 46,
           name = "",
-          type = "patrol",
+          type = "scarab",
           shape = "polyline",
           x = 176,
           y = 336,

@@ -12,7 +12,7 @@ local entity_handlers = {
 
 local entity_types = {
   crate_entity        = require "lib.entities.crate",
-  patroller_entity    = require "lib.entities.patroller"
+  scarab_entity       = require "lib.entities.scarab"
 }
 
 function entity_handlers.crate (env, object) 
@@ -22,8 +22,8 @@ function entity_handlers.crate (env, object)
   })
 end
 
-function entity_handlers.patrol (env, object)  
-  entity_types.patroller_entity.create(env, { 
+function entity_handlers.scarab (env, object)  
+  entity_types.scarab_entity.create(env, { 
       patrol_path   = tiled.getPath(object),
       is_clockwise  = object.properties.clockwise or false,
       object_id = object.id

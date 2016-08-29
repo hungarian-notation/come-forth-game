@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.0" orientation="orthogonal" renderorder="right-down" width="36" height="36" tilewidth="16" tileheight="16" nextobjectid="49">
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="36" height="36" tilewidth="16" tileheight="16" nextobjectid="51">
  <tileset firstgid="1" source="../../tileset.tsx"/>
  <layer name="background" width="36" height="36">
   <data encoding="csv">
@@ -136,20 +136,16 @@
   <object id="23" type="crate" x="16" y="480" width="16" height="16"/>
   <object id="24" type="crate" x="16" y="496" width="16" height="16"/>
   <object id="25" type="crate" x="16" y="512" width="16" height="16"/>
-  <object id="34" type="patrol" x="128" y="240">
-   <properties>
-    <property name="enemy_type" value="scarab"/>
-    <property name="start_vertex" type="int" value="1"/>
-   </properties>
+  <object id="34" type="scarab" x="128" y="240">
    <polyline points="0,0 176,0 176,48 240,48 240,0 400,0"/>
   </object>
-  <object id="38" type="patrol" x="240" y="336">
+  <object id="38" type="scarab" x="240" y="336">
    <properties>
     <property name="clockwise" type="bool" value="true"/>
    </properties>
    <polyline points="0,0 32,0 64,32 64,64 -160,64 -160,32 0,32 0,0"/>
   </object>
-  <object id="46" type="patrol" x="176" y="336">
+  <object id="46" type="scarab" x="176" y="336">
    <properties>
     <property name="clockwise" type="bool" value="true"/>
    </properties>

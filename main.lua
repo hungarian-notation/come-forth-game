@@ -263,7 +263,6 @@ end
 
 function resolve_camera () -- keeps the camera pointing at the player, if a player entity is active
   if not env.player then
-    print('no player')
     return
   end
   

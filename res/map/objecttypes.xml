@@ -6,9 +6,7 @@
  <objecttype name="spawn" color="#55aaff"/>
  <objecttype name="killbox" color="#ff0004"/>
  <objecttype name="crate" color="#ffaa00"/>
- <objecttype name="patrol" color="#ff55ff">
+ <objecttype name="scarab" color="#ff55ff">
   <property name="clockwise" type="bool"/>
-  <property name="enemy_type" type="string"/>
-  <property name="start_vertex" type="int"/>
  </objecttype>
 </objecttypes>

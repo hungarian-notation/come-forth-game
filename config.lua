@@ -1,6 +1,10 @@
 local vector = require "lib.vector"
 
 local config = {
+  trigger_collections = {
+    "test_triggers"
+  },
+  
   time_step           = 1.0 / 200.0,
   
   tile_size           = 16,
@@ -11,8 +15,8 @@ local config = {
   tileset_rows        = 20,
   tileset_columns     = 20,
     
-  window_width        = 800,
-  window_height       = 600,
+  window_width        = 768,
+  window_height       = 576,
     
   text_display = {
     width = 700,

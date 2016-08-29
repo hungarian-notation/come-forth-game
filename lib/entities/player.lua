@@ -27,6 +27,8 @@ function player_entity.create (env, args)
     _float_tmr          = 0,
     _drop_tmr           = 0,
     
+    _simerr             = 0,
+    
     blaster             = {
         cooldown  = 0,
         released  = false
@@ -39,11 +41,11 @@ function player_entity.create (env, args)
 end
 
 function player_entity:update (dt, env)
-  env.state.time_error = env.state.time_error + dt
+  self._simerr = self._simerr + dt
   
-  while env.state.time_error > config.time_step do
+  while self._simerr > config.time_step do
     self:simulate_physics(config.time_step, env)
-    env.state.time_error = env.state.time_error - config.time_step
+    self._simerr = self._simerr - config.time_step
   end
   
   -- look for deadly enemies
@@ -64,13 +66,12 @@ function player_entity:update (dt, env)
     end
   end
   
-  
   self:update_weapon(dt, env)
   self:update_aim()
 end
 
 function player_entity:kill (env)
-  env.message:show {
+  env.textbox:show {
       text = "You Died.",
       style = {
           size = 64,

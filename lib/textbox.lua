@@ -2,7 +2,7 @@ local config          = require "config"
 
 local textbox = {} ; textbox.__index = textbox
 
-function textbox.initialize ()
+function textbox.create ()
   return setmetatable({}, textbox)
 end
   

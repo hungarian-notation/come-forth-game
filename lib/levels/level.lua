@@ -44,8 +44,6 @@ function level:initialize (env)
   for i, object in pairs(self.objects) do
     if entity_handlers[object.type] then
       entity_handlers[object.type](env, object)
-    else
-      print('no handler for level object type ' .. tostring(object.type))
     end
   end
 end

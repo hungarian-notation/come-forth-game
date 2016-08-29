@@ -5,7 +5,6 @@ local destructibles = {
 function destructibles:reset ()
   assert(self._records)
   self._records = {}
-  print('reset destructables')
 end
 
 function destructibles:destroy (level_name, object_id)

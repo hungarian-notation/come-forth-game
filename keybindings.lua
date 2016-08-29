@@ -14,5 +14,7 @@ return {
   interact = 'enter',
   
   debug_mode = 'f4',
-  force_respawn = 'k' -- only works in debug mode
+  
+  force_respawn = 'k',        -- only works in debug mode
+  force_reset = 'backspace'   -- only works in debug mode
 }

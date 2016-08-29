@@ -86,7 +86,6 @@ end
 
 function environment:use_exit (exit_name, target)
   local room_name, object_name = split_address(target)
-  print('using exit ' .. exit_name .. ' to ' .. object_name .. ' in ' .. room_name)
   self:set_level(room_name, object_name)
 end
 

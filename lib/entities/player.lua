@@ -64,6 +64,7 @@ function player_entity:update (dt, env)
     end
   end
   
+  
   self:update_weapon(dt, env)
   self:update_aim()
 end

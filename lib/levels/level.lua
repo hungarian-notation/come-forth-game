@@ -9,8 +9,12 @@ local entity_handlers = require "lib.levels.entity_handlers"
 
 local level = {} ; level.__index = level 
 
-function level.new (map_data) 
+function level.new (level_name) 
     local self = setmetatable({}, level)
+    
+    self.name = level_name
+    
+    local map_data = require("res.map." .. level_name)
     
     self.width = map_data.width
     self.height = map_data.height
@@ -76,41 +80,59 @@ function level:getObject (id_or_name)
   end
 end
 
-function level:getTileMap () 
-  local tileset_image = tiles:getTileSet()
-  
-  local batch = love.graphics.newSpriteBatch(tileset_image, self.width * self.height * 4 --[[ four layers ]])
-  
-  for x = 0, self.width - 1 do
-    for y = 0, self.height - 1 do
-      local background  = self.layers.background  and self.layers.background:getTile(x, y)
-      local decor       = self.layers.decor       and self.layers.decor:getTile(x, y)
-      local platform    = self.layers.platforms   and self.layers.platforms:getTile(x, y)
-      local wall        = self.layers.walls       and self.layers.walls:getTile(x, y)
-      
-      if background then batch:add(tiles[background].quad,  x * config.tile_size, y * config.tile_size, 0) end
-      if decor      then batch:add(tiles[decor].quad,       x * config.tile_size, y * config.tile_size, 0) end
-      if platform   then batch:add(tiles[platform].quad,    x * config.tile_size, y * config.tile_size, 0) end
-      if wall       then batch:add(tiles[wall].quad,        x * config.tile_size, y * config.tile_size, 0) end
-    end 
+function level:getUnderlay ()
+  if not self.underlay_batch then
+    local tileset_image = tiles:getTileSet()
+    
+    local batch = love.graphics.newSpriteBatch(tileset_image, self.width * self.height * 4 --[[ four layers ]])
+    
+    for x = 0, self.width - 1 do
+      for y = 0, self.height - 1 do
+        local background  = self.layers.background  and self.layers.background:getTile(x, y)
+        local decor       = self.layers.decor       and self.layers.decor:getTile(x, y)
+        local platform    = self.layers.platforms   and self.layers.platforms:getTile(x, y)
+        local wall        = self.layers.walls       and self.layers.walls:getTile(x, y)
+        
+        if background then batch:add(tiles[background].quad,  x * config.tile_size, y * config.tile_size, 0) end
+        if decor      then batch:add(tiles[decor].quad,       x * config.tile_size, y * config.tile_size, 0) end
+        if platform   then batch:add(tiles[platform].quad,    x * config.tile_size, y * config.tile_size, 0) end
+        if wall       then batch:add(tiles[wall].quad,        x * config.tile_size, y * config.tile_size, 0) end
+      end 
+    end
+    
+    self.underlay_batch = batch
   end
   
-  return batch
+  return self.underlay_batch
 end
 
 function level:getOverlay () 
-  local tileset_image = tiles:getTileSet()
-  
-  local batch = love.graphics.newSpriteBatch(tileset_image, self.width * self.height --[[ one layer ]])
-  
-  for x = 0, self.width - 1 do
-    for y = 0, self.height - 1 do
-      local overlay  = self.layers.overlay and self.layers.overlay:getTile(x, y)
-      if overlay    then batch:add(tiles[overlay].quad,  x * config.tile_size, y * config.tile_size, 0) end
-    end 
+  if not self.overlay_batch then
+    local tileset_image = tiles:getTileSet()
+    
+    local batch = love.graphics.newSpriteBatch(tileset_image, self.width * self.height --[[ one layer ]])
+    
+    for x = 0, self.width - 1 do
+      for y = 0, self.height - 1 do
+        local overlay  = self.layers.overlay and self.layers.overlay:getTile(x, y)
+        if overlay    then batch:add(tiles[overlay].quad,  x * config.tile_size, y * config.tile_size, 0) end
+      end 
+    end
+    
+    self.overlay_batch = batch
   end
   
-  return batch
+  return self.overlay_batch
+end
+
+function level:drawUnderlay (env)
+  love.graphics.setColor(0xFF, 0xFF, 0xFF)
+  love.graphics.draw(self:getUnderlay(), -env.camera.x * env.camera.scale, -env.camera.y * env.camera.scale, 0, env.camera.scale, env.camera.scale)
+end
+
+function level:drawOverlay (env)
+  love.graphics.setColor(0xFF, 0xFF, 0xFF)
+  love.graphics.draw(self:getOverlay(), -env.camera.x * env.camera.scale, -env.camera.y * env.camera.scale, 0, env.camera.scale, env.camera.scale)
 end
 
 return level

@@ -5,10 +5,16 @@
  </objecttype>
  <objecttype name="spawn" color="#55aaff"/>
  <objecttype name="killbox" color="#ff0004"/>
- <objecttype name="crate" color="#ffaa00"/>
+ <objecttype name="crate" color="#ffaa00">
+  <property name="alien" type="bool"/>
+ </objecttype>
  <objecttype name="scarab" color="#ff55ff">
   <property name="clockwise" type="bool"/>
   <property name="hitpoints" type="int" default="1"/>
  </objecttype>
  <objecttype name="upgrade" color="#ffff00"/>
+ <objecttype name="blast_door" color="#aa00ff"/>
+ <objecttype name="trigger" color="#0055ff">
+  <property name="on_contains" type="bool"/>
+ </objecttype>
 </objecttypes>

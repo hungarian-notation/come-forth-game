@@ -5,6 +5,15 @@ local config = require "config"
 
 local tiles = { }
 
+function tiles:getTileSet ()
+  if not self._tileset then
+    self._tileset = love.graphics.newImage('res/art/tileset.png')
+    self._tileset:setFilter("nearest", "nearest")
+  end
+  
+  return self._tileset
+end
+
 tiles.named_tiles = {
   crate = 380,
   scarab = 381

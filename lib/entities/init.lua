@@ -1,4 +1,17 @@
+local bounds = require "lib.bounds"
+
 local entities = {}
+
+function entities.getBounds (entity) 
+  if not ((entity.minimum or entity.position) and entity.size) then
+    return nil
+  else    
+    local min = entity.minimum or (entity.position - (entity.origin or vector.zero()))
+    local max = min + entity.size
+    
+    return bounds.new{ min = min, max = max }
+  end
+end
 
 function entities.newWorld ()
   local world = { _next = 1, population = {} }

@@ -22,13 +22,11 @@ function entity_handlers.crate (env, object)
   })
 end
 
-function entity_handlers.patrol (env, object)
-  local path = object
-  local facings = env.level:getObject(path.properties.guide_reference)
-  
+function entity_handlers.patrol (env, object)  
   entity_types.patroller_entity.create(env, { 
-      patrol_path       = tiled.getPath(path),
-      patrol_facings    = tiled.getPath(facings)
+      patrol_path   = tiled.getPath(object),
+      is_clockwise  = object.properties.clockwise or false,
+      object_id = object.id
   })
 end
 

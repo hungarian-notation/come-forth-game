@@ -15,6 +15,8 @@ local config = {
   window_height       = 900,
     
   player = {  
+    respawn_time      = 3,
+    
     size              = vector(16, 32),
     origin            = vector(8, 32),
     fall_through_time = 0.1,
@@ -40,6 +42,10 @@ local config = {
     },
     
     gravity           = 800
+  },
+  
+  enemies = {
+    patroller_speed = 48
   }
 }
 

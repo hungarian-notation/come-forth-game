@@ -8,7 +8,7 @@ return {
   height = 36,
   tilewidth = 16,
   tileheight = 16,
-  nextobjectid = 43,
+  nextobjectid = 49,
   properties = {},
   tilesets = {
     {
@@ -454,30 +454,8 @@ return {
           },
           properties = {
             ["enemy_type"] = "scarab",
-            ["guide_reference"] = 35,
             ["start_vertex"] = 1
           }
-        },
-        {
-          id = 35,
-          name = "",
-          type = "guide",
-          shape = "polyline",
-          x = 128,
-          y = 256,
-          width = 0,
-          height = 0,
-          rotation = 0,
-          visible = true,
-          polyline = {
-            { x = 0, y = 0 },
-            { x = 160, y = 0 },
-            { x = 160, y = 48 },
-            { x = 256, y = 48 },
-            { x = 256, y = 0 },
-            { x = 400, y = 0 }
-          },
-          properties = {}
         },
         {
           id = 38,
@@ -497,33 +475,35 @@ return {
             { x = 64, y = 64 },
             { x = -160, y = 64 },
             { x = -160, y = 32 },
-            { x = 0, y = 32 }
+            { x = 0, y = 32 },
+            { x = 0, y = 0 }
           },
           properties = {
-            ["guide_reference"] = 41
+            ["clockwise"] = true
           }
         },
         {
-          id = 41,
+          id = 46,
           name = "",
-          type = "guide",
+          type = "patrol",
           shape = "polyline",
-          x = 240,
-          y = 320,
+          x = 176,
+          y = 336,
           width = 0,
           height = 0,
           rotation = 0,
           visible = true,
           polyline = {
             { x = 0, y = 0 },
-            { x = 48, y = 0 },
-            { x = 80, y = 32 },
-            { x = 80, y = 96 },
-            { x = -176, y = 96 },
-            { x = -176, y = 32 },
-            { x = 0, y = 32 }
+            { x = 0, y = 16 },
+            { x = -96, y = 16 },
+            { x = -96, y = -48 },
+            { x = -48, y = -48 },
+            { x = 0, y = 0 }
           },
-          properties = {}
+          properties = {
+            ["clockwise"] = true
+          }
         }
       }
     }

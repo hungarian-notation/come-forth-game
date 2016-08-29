@@ -32,5 +32,9 @@ end
 function segment:getAntiNormal ()
   return self:getDirection():getAntiNormal()
 end
+
+function segment:getLength ()
+  return self:getForwardVector():length()
+end
  
 return segment

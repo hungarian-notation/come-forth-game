@@ -4,7 +4,7 @@ local vector = require "lib.vector"
 local sensor = require "lib.sensor"
 
 local crate_entity = {} ; crate_entity.__index = crate_entity
-local image, quad
+local quad
 
 function crate_entity.create (env, args) -- create new crate entity
   local instance = setmetatable({
@@ -31,18 +31,13 @@ function crate_entity:shoot (env, projectile)
 end
 
 function crate_entity:draw (env) -- draw a crate entity
-  if not image then
-    image = love.graphics.newImage("res/art/tileset.png")
-    image:setFilter("nearest", "nearest")
-  end
-  
   if not quad then
     quad = tiles.getQuad(tiles.named_tiles.crate)
   end
   
   love.graphics.setColor(0xFF, 0xFF, 0xFF)
   love.graphics.draw(
-    image,
+    tiles:getTileSet(),
     quad, 
     
     (self.position.x - env.camera.x) * env.camera.scale, 

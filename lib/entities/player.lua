@@ -4,6 +4,8 @@ local config = require "config"
 local vector = require "lib.vector"
 local sensor = require "lib.sensor"
 
+local entities = require "lib.entities"
+
 local player_entity = {} ; player_entity.__index = player_entity
 
 local simulate_physics
@@ -28,7 +30,9 @@ function player_entity.create (env, args)
     blaster             = {
         cooldown  = 0,
         released  = false
-    }
+    },
+    
+    is_player           = true
   }, player_entity)
   
   return env.world:create(instance)
@@ -42,8 +46,27 @@ function player_entity:update (dt, env)
     env.state.time_error = env.state.time_error - config.time_step
   end
   
+  -- look for deadly enemies
+  
+  local my_bounds = entities.getBounds(self)
+  
+  for id, entity in env.world:each() do
+    if entity.is_deadly then
+      local bounds = entities.getBounds(entity)
+      
+      if bounds and bounds:intersects(my_bounds) then
+        self:kill(env)
+      end
+    end
+  end
+  
   self:update_weapon(dt, env)
   self:update_aim()
+end
+
+function player_entity:kill (env)
+  env.world:destroy(self)
+  env.player = nil
 end
 
 function player_entity:update_aim ()

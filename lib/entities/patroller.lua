@@ -2,95 +2,174 @@ local config    = require "config"
 local vector    = require "lib.vector"
 local segment   = require "lib.segment"
 local sensor    = require "lib.sensor"
+local tiles     = require "lib.tiles"
 
 local patroller_entity = {} ; patroller_entity.__index = patroller_entity
-
-local time_to_patrol = 5
+local quad
 
 function patroller_entity.create (env, args) 
   
   -- initialize entity
   
   local instance = setmetatable({
+    object_id       = assert(args.object_id, 'missing object id'),
+      
+    position        = vector.zero(),  -- computed manually each update
+    rotation        = 0,
+    minimum         = vector.zero(),
+    size            = vector(16, 16),   -- hitbox 
+    
     patrol_path     = assert(args.patrol_path, 'missing path'),
-    guide_path      = assert(args.patrol_facings, 'missing facings'),
-    path_normals    = {},
-    path_lengths    = {},
+    is_clockwise    = args.is_clockwise,
+    
+    path_segments   = {},
     path_length     = nil,
+    
+    patrol_duration = nil,
+    
+    patrol_mode     = 'bounce',
+    is_deadly       = true,
     
     timer           = 0
   }, patroller_entity)
 
   instance:compute_path()
   
-  return env.world:create(instance)
+  if not env.destructibles:is_destroyed(env.level.name, instance.object_id) then
+    return env.world:create(instance)
+  else
+    return nil
+  end
+end
+
+function patroller_entity:shoot (env, projectile)
+  env.world:destroy(self)
+  env.destructibles:destroy(env.level.name, self.object_id)
+  return true
 end
 
 function patroller_entity:compute_path ()  
   self.path_length = 0
   
-  for i = 1, #self.patrol_path - 1 do    
-    local path_seg = segment.new(self.patrol_path[i], self.patrol_path[i+1])
-    local guide_seg = segment.new(self.guide_path[i], self.guide_path[i+1])
-    
-    local path_normal = path_seg:getNormal()
-    
-    local to_guide = guide_seg.from - path_seg.from
-    local projection = path_normal:dot(to_guide)
-    
-    if projection < 0 then 
-      path_normal = path_normal:scale(-1)
-    end
-    
-    self.path_normals[i] = path_normal
-    self.path_lengths[i] = path_seg:getForwardVector():length()
-    
-    self.path_length = self.path_length + self.path_lengths[i]
+  if self.patrol_path[1] == self.patrol_path[#self.patrol_path] then
+    self.patrol_mode = 'loop'
   end
+  
+  for i = 1, #self.patrol_path - 1 do    
+    local path_seg = segment.new(self.patrol_path[i], self.patrol_path[i+1])    
+    self.path_segments[i] = path_seg
+    self.path_length = self.path_length + path_seg:getLength()
+  end
+  
+  self.patrol_duration = self.path_length / config.enemies.patroller_speed
 end
 
 function patroller_entity:update (dt, env)
-  
   self.timer = self.timer + dt
   
-  while self.timer > time_to_patrol do
-      self.timer = self.timer - time_to_patrol
+  if self.patrol_mode == 'bounce' then
+    if self.timer > self.patrol_duration * 2 then
+      self.timer = 0
+    end
+  elseif self.patrol_mode == 'loop' then
+    if self.timer > self.patrol_duration then
+      self.timer = 0
+    end
+  else
+    error('unknown patrol mode: ' .. tostring(self.patrol_mode))
   end
   
-  
+  self:computeProgress()
   
   -- update entity
+end
+
+function patroller_entity:computeProgress ()
+  local distance = self.timer * config.enemies.patroller_speed
   
+  if distance > self.path_length then
+    distance = self.path_length - distance
+  end
+  
+  local remaining = math.abs(distance)
+  
+  local start, goal, direction
+  
+  if distance < 0 then 
+    start = #self.path_segments
+    goal = 1
+    direction = -1
+  else
+    start = 1
+    goal = #self.path_segments
+    direction = 1
+  end
+  
+  local current_segment
+  
+  for i = start, goal, direction do
+    local seg = self.path_segments[i]
+    local segment_length = seg:getLength()
+    
+    if remaining < segment_length then
+      current_segment = seg
+      break
+    else
+      remaining = remaining - segment_length
+    end
+  end
+  
+  if direction == 1 then
+    self.position = current_segment.from + current_segment:getDirection():scale(remaining)
+  else
+    self.position = current_segment.to + current_segment:getDirection():scale(-remaining)
+  end
+  
+  local normal
+  
+  if self.is_clockwise then
+    normal = current_segment:getAntiNormal()
+  else
+    normal = current_segment:getNormal()
+  end
+  
+  self.rotation = normal:getAngle()
+  
+  local center = self.position + normal:scale(8)
+  
+  self.minimum = center - self.size:scale(1/2)
 end
 
 function patroller_entity:draw (env)
-  local portions = #self.patrol_path - 1
-  local sigma = (self.timer / time_to_patrol) * portions
+  if not quad then
+    quad = tiles.getQuad(tiles.named_tiles.scarab)
+  end
   
-  local portion = math.floor(sigma)
-  local progress = sigma % 1
+  local draw_location = self.position:scale(env.camera.scale):floor():scale(1 / env.camera.scale)
+  local sprite_origin = vector(8, 16)
   
-  local from = self.patrol_path[portion + 1]
-  local to = self.patrol_path[portion + 2]
+  local x_mirror = 1
   
-  local position = from:scale(1 - progress) + to:scale(progress)
-  local normal = self.path_normals[portion + 1]:scale(16)
+  if not self.is_clockwise then
+    x_mirror = -1
+  end
   
-  local point_to = position + normal
+  if self.timer > self.patrol_duration then
+    x_mirror = x_mirror * -1
+  end
   
   love.graphics.setColor(0xFF, 0xFF, 0xFF)
-  love.graphics.ellipse("fill", (position.x - env.camera.x) * env.camera.scale, (position.y - env.camera.y) * env.camera.scale, 4 * env.camera.scale, 4 * env.camera.scale)
-  love.graphics.setColor(0xAA, 0xAA, 0xAA)
-  
-  love.graphics.line(
-    (position.x - env.camera.x) * env.camera.scale, 
-    (position.y - env.camera.y) * env.camera.scale,
-    (point_to.x - env.camera.x) * env.camera.scale, 
-    (point_to.y - env.camera.y) * env.camera.scale
+  love.graphics.draw(tiles:getTileSet(), quad, 
+    (draw_location.x - env.camera.x) * env.camera.scale,  -- x
+    (draw_location.y - env.camera.y) * env.camera.scale,  -- y
+    self.rotation + math.pi / 2,  -- rotation
+    
+    env.camera.scale * x_mirror,  -- scale
+    env.camera.scale,  -- scale
+    
+    sprite_origin.x,
+    sprite_origin.y
   )
-  
-  -- draw entity
-  
 end
 
 return patroller_entity

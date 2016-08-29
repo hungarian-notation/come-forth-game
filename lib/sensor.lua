@@ -1,5 +1,6 @@
-local vector = require "lib.vector"
-local tiles = require "lib.tiles"
+local vector      = require "lib.vector"
+local tiles       = require "lib.tiles"
+local entities    = require "lib.entities"
 
 local sensor = {}
 
@@ -25,7 +26,7 @@ function sensor.sense (env, origin, offset, steps, args)
   
   if args.sense_entities then
     for id, entity in env.world:each() do
-      if entity.position and entity.size then
+      if (entity.position or entity.minimum) and entity.size then
         sensable_entities[entity.id] = entity
       end
     end
@@ -41,11 +42,10 @@ function sensor.sense (env, origin, offset, steps, args)
     
     if args.sense_entities then
       for id, entity in pairs(sensable_entities) do
-        if args.entity_filter(env, entity) then
-          local min = entity.position - (entity.origin or vector.zero())
-          local max = min + entity.size
+        if args.entity_filter(env, entity) then         
+          local bounds = entities.getBounds(entity)
           
-          if pos.x >= min.x and pos.x < max.x and pos.y >= min.y and pos.y < max.y then
+          if pos.x >= bounds.min.x and pos.x < bounds.max.x and pos.y >= bounds.min.y and pos.y < bounds.max.y then
             return i, entity -- collision with entity
           end
         end

@@ -12,8 +12,10 @@ local tiled           = require "lib.levels.tiled"
 -- Game State
 
 local env = {
+  debug = false,
   level = nil,
   world = nil,
+  respawn_time = 3,
   
   progress = {
       spawn_location    = { room = "entrance", spawner = "initial_spawn" },
@@ -82,6 +84,7 @@ end
 local function spawn() 
   env.destructibles:reset()
   set_level(env.progress.spawn_location.room, env.progress.spawn_location.spawner)
+  env.respawn_time = config.player.respawn_time
 end
 
 -- Initialization
@@ -93,7 +96,11 @@ end
 -- Engine Hooks
 
 function love.keypressed (key, scancode, repeated)
-  if key == 'space' and not repeated then
+  if key == 'f4' then
+    env.debug = not env.debug
+  end
+  
+  if env.debug and key == 'space' and not repeated then
     spawn()
   end
 end
@@ -107,6 +114,10 @@ end
 
 
 local function contains_player (object) 
+  if not env.player then
+    return
+  end
+  
   local player_minimum = env.player.position - config.player.origin
   
   local fudge = 1
@@ -125,6 +136,10 @@ local function contains_player (object)
 end
 
 local function touches_player (object) 
+  if not env.player then
+    return false
+  end
+  
   local player_minimum = env.player.position - config.player.origin
   
   local fudge = 1
@@ -158,12 +173,16 @@ local function use_exit (exit_name, target)
 end
 
 local function check_triggers () 
+  if not env.player then
+    return
+  end
+  
   for i, object in ipairs(env.level.objects) do
     local contains = contains_player(object)
     local touching = touches_player(object)
     
     if touching and object.type == 'killbox' then
-      spawn()
+      env.player:kill(env)
     end
     
     if contains and object.type == 'exit' then
@@ -196,7 +215,16 @@ local update_world
 
 function love.update (dt)
   env.world:update(dt, get_env())
+  
   check_triggers()
+  
+  if not env.player then
+    env.respawn_time = env.respawn_time - dt    
+    if env.respawn_time < 0 then
+      
+      spawn()
+    end
+  end
 end
 
 local resolve_camera
@@ -206,7 +234,31 @@ local draw_watch_expressions, draw_map_wireframe
 function love.draw () 
   resolve_camera()
   draw_level()
+  
   env.world:draw(get_env())
+  
+  if env.debug then
+    for id, entity in env.world:each() do
+      local bounds = entities.getBounds(entity)
+  
+      if bounds then
+        if entity.is_deadly then
+          love.graphics.setColor(0xFF, 0x00, 0x00)
+        else
+          love.graphics.setColor(0xFF, 0xFF, 0x00)
+        end
+        
+        love.graphics.setLineWidth(1 * env.camera.scale)
+        love.graphics.rectangle(
+          "line",
+          (bounds.min.x - env.camera.x) * env.camera.scale,  -- x
+          (bounds.min.y - env.camera.y) * env.camera.scale,  -- y
+          bounds.size.x * env.camera.scale,
+          bounds.size.y * env.camera.scale
+        )
+      end
+    end
+  end
 end
 
 function resolve_camera () -- keeps the camera pointing at the player, if a player entity is active
@@ -247,38 +299,41 @@ function draw_level () -- draws the tilemap and any placeholder boxes for level 
     love.graphics.draw(env.level.tilemap, -env.camera.x * env.camera.scale, -env.camera.y * env.camera.scale, 0, env.camera.scale, env.camera.scale)
         
     for i, object in pairs(env.level.objects) do
-      local color_array = config.object_colors[object.type] or { 0xFF, 0xFF, 0xFF }
+      local color_array = config.object_colors[object.type] or { 0xFF, 0xFF, 0xFF}
       love.graphics.setColor(unpack(color_array))
       
-      if object.shape == "rectangle" then
-        love.graphics.rectangle("line", 
-          (object.x - env.camera.x) * env.camera.scale, 
-          (object.y - env.camera.y) * env.camera.scale, 
-          object.width * env.camera.scale,
-          object.height * env.camera.scale)
-        
-        if object.type == 'spawn' 
-          and env.level.name == env.progress.spawn_location.room 
-          and object.name == env.progress.spawn_location.spawner then
-            love.graphics.ellipse("line", 
-              (object.x + object.width / 2 - env.camera.x) * env.camera.scale, 
-              (object.y + object.height / 2 - env.camera.y) * env.camera.scale, 
-              object.width / 2 * env.camera.scale,
-              object.height / 2 * env.camera.scale)
-        end
-      elseif object.shape == 'polyline' then
-        local vectors = tiled.getPath(object)
+      if object.type == 'spawn' or env.debug then
+        if object.shape == "rectangle" then
+            
+          love.graphics.rectangle("line", 
+            (object.x - env.camera.x) * env.camera.scale, 
+            (object.y - env.camera.y) * env.camera.scale, 
+            object.width * env.camera.scale,
+            object.height * env.camera.scale)
           
-        for i = 1, #vectors - 1 do
-          local from = vectors[i]
-          local to = vectors[i + 1]
-          
-          love.graphics.line(
-            (from.x - env.camera.x) * env.camera.scale, 
-            (from.y - env.camera.y) * env.camera.scale,
-            (to.x - env.camera.x) * env.camera.scale, 
-            (to.y - env.camera.y) * env.camera.scale
-          )
+          if object.type == 'spawn' 
+            and env.level.name == env.progress.spawn_location.room 
+            and object.name == env.progress.spawn_location.spawner then
+              love.graphics.ellipse("line", 
+                (object.x + object.width / 2 - env.camera.x) * env.camera.scale, 
+                (object.y + object.height / 2 - env.camera.y) * env.camera.scale, 
+                object.width / 2 * env.camera.scale,
+                object.height / 2 * env.camera.scale)
+          end
+        elseif object.shape == 'polyline' then
+          local vectors = tiled.getPath(object)
+            
+          for i = 1, #vectors - 1 do
+            local from = vectors[i]
+            local to = vectors[i + 1]
+            
+            love.graphics.line(
+              (from.x - env.camera.x) * env.camera.scale, 
+              (from.y - env.camera.y) * env.camera.scale,
+              (to.x - env.camera.x) * env.camera.scale, 
+              (to.y - env.camera.y) * env.camera.scale
+            )
+          end
         end
       end
     end

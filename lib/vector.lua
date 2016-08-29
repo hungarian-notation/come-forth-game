@@ -137,12 +137,16 @@ function vector:getAntiNormal ()
   return vector.new(self.y, -self.x)
 end
 
-function vector:floor() 
+function vector:floor () 
   return vector.new(math.floor(self.x), math.floor(self.y))
 end
 
-function vector:ceil() 
+function vector:ceil () 
   return vector.new(math.ceil(self.x), math.ceil(self.y))
+end
+
+function vector:getAngle ()
+  return math.atan2(self.y, self.x)
 end
 
 return vector

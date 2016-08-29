@@ -23,9 +23,9 @@ local env = {
   progress = {
       spawn_location    = { room = "entrance", spawner = "initial_spawn" },
     
-      blaster           = true,
-      high_jump         = true,
-      double_jump       = true,
+      blaster           = false,
+      high_jump         = false,
+      double_jump       = false,
       super_blaster     = false,
           
       ankh_sun          = false,
@@ -81,7 +81,9 @@ local function set_level (level_name, entry_name)
   env.level = levels.newLevel(definition)
   
   env.level.name = level_name
-  env.level.tilemap = env.level:getTilemap()
+  
+  env.level.tilemap = env.level:getTileMap()
+  env.level.overlay = env.level:getOverlay()
   
   local entry_object = env.level:getObject(entry_name)
   
@@ -249,6 +251,9 @@ function love.draw ()
   
   env.world:draw(get_env())
   
+  love.graphics.setColor(0xFF, 0xFF, 0xFF)
+  love.graphics.draw(env.level.overlay, -env.camera.x * env.camera.scale, -env.camera.y * env.camera.scale, 0, env.camera.scale, env.camera.scale)
+  
   if env.debug then
     for id, entity in env.world:each() do
       local bounds = entities.getBounds(entity)
@@ -306,6 +311,7 @@ end
 function draw_level () -- draws the tilemap and any placeholder boxes for level objects
   if env.level then
     love.graphics.setLineWidth(2 * env.camera.scale)
+    
     love.graphics.setColor(0xFF, 0xFF, 0xFF)
     love.graphics.draw(env.level.tilemap, -env.camera.x * env.camera.scale, -env.camera.y * env.camera.scale, 0, env.camera.scale, env.camera.scale)
         

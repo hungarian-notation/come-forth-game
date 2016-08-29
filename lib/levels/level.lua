@@ -16,8 +16,10 @@ function level.new (map_data)
     self.height = map_data.height
     
     self.layers = {
+      overlay     = layer.new(tiled.getLayerData(map_data, "overlay")),
       walls       = layer.new(tiled.getLayerData(map_data, "walls")),
       platforms   = layer.new(tiled.getLayerData(map_data, "platforms")),
+      decor       = layer.new(tiled.getLayerData(map_data, "decor")),
       background  = layer.new(tiled.getLayerData(map_data, "background"))
     }
     
@@ -74,22 +76,38 @@ function level:getObject (id_or_name)
   end
 end
 
-function level:getTilemap () 
-  local tileset_image = love.graphics.newImage("res/art/tileset.png")
-  tileset_image:setFilter("nearest", "nearest")
+function level:getTileMap () 
+  local tileset_image = tiles:getTileSet()
   
-  local batch = love.graphics.newSpriteBatch(tileset_image, self.width * self.height * 3 --[[ three layers ]])
+  local batch = love.graphics.newSpriteBatch(tileset_image, self.width * self.height * 4 --[[ four layers ]])
   
   for x = 0, self.width - 1 do
     for y = 0, self.height - 1 do
-      local background  = self.layers.background:getTile(x, y)
-      local platform    = self.layers.platforms:getTile(x, y)
-      local wall        = self.layers.walls:getTile(x, y)
+      local background  = self.layers.background  and self.layers.background:getTile(x, y)
+      local decor       = self.layers.decor       and self.layers.decor:getTile(x, y)
+      local platform    = self.layers.platforms   and self.layers.platforms:getTile(x, y)
+      local wall        = self.layers.walls       and self.layers.walls:getTile(x, y)
       
-      if background then batch:add(tiles[background].quad, x * config.tile_size, y * config.tile_size, 0) end
-      if platform then batch:add(tiles[platform].quad, x * config.tile_size, y * config.tile_size, 0) end
-      if wall then batch:add(tiles[wall].quad, x * config.tile_size, y * config.tile_size, 0) end
-    end
+      if background then batch:add(tiles[background].quad,  x * config.tile_size, y * config.tile_size, 0) end
+      if decor      then batch:add(tiles[decor].quad,       x * config.tile_size, y * config.tile_size, 0) end
+      if platform   then batch:add(tiles[platform].quad,    x * config.tile_size, y * config.tile_size, 0) end
+      if wall       then batch:add(tiles[wall].quad,        x * config.tile_size, y * config.tile_size, 0) end
+    end 
+  end
+  
+  return batch
+end
+
+function level:getOverlay () 
+  local tileset_image = tiles:getTileSet()
+  
+  local batch = love.graphics.newSpriteBatch(tileset_image, self.width * self.height --[[ one layer ]])
+  
+  for x = 0, self.width - 1 do
+    for y = 0, self.height - 1 do
+      local overlay  = self.layers.overlay and self.layers.overlay:getTile(x, y)
+      if overlay    then batch:add(tiles[overlay].quad,  x * config.tile_size, y * config.tile_size, 0) end
+    end 
   end
   
   return batch

@@ -54,7 +54,7 @@ function sensor.sense (env, origin, offset, steps, args)
     
     if args.sense_platforms and platform_tile and in_tile.y == 0 then
       return i -- collision with platform
-    elseif wall_tile and tiles[wall_tile].is_solid then
+    elseif wall_tile then
       local collision = true
       
       if tiles[wall_tile].is_ramp then

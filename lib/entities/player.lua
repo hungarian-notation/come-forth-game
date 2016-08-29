@@ -51,11 +51,15 @@ function player_entity:update (dt, env)
   local my_bounds = entities.getBounds(self)
   
   for id, entity in env.world:each() do
-    if entity.is_deadly then
-      local bounds = entities.getBounds(entity)
-      
-      if bounds and bounds:intersects(my_bounds) then
+    local bounds = entities.getBounds(entity)
+    
+    if bounds and bounds:intersects(my_bounds) then
+      if entity.is_deadly then
         self:kill(env)
+      end
+      
+      if entity.collect then
+        entity:collect(env)
       end
     end
   end
@@ -134,26 +138,33 @@ function player_entity:draw (env)
   
   love.graphics.rectangle("fill", (minimum.x - env.camera.x) * env.camera.scale, (minimum.y - env.camera.y) * env.camera.scale, config.player.size.x * env.camera.scale, config.player.size.y * env.camera.scale)
   
-  local offset = self.facing:normalized():scale(8 * 1.4)
-  local center = minimum + self.size:scale(0.5)
-  local looking_at = center + offset
-  
-  love.graphics.setLineWidth(3 * env.camera.scale)
-  love.graphics.setColor(0xAA, 0xAA, 0xAA)
-  love.graphics.line((center.x - env.camera.x) * env.camera.scale, (center.y - env.camera.y) * env.camera.scale, (looking_at.x - env.camera.x) * env.camera.scale, (looking_at.y - env.camera.y) * 
-env.camera.scale)
-  
-  
-  love.graphics.setLineWidth(8)
+  if env.progress.blaster or env.progress.super_blaster then
+    local offset = self.facing:normalized():scale(8 * 1.4)
+    local center = minimum + self.size:scale(0.5)
+    local looking_at = center + offset
+    
+    love.graphics.setLineWidth(3 * env.camera.scale)
+    love.graphics.setColor(0xAA, 0xAA, 0xAA)
+    love.graphics.line((center.x - env.camera.x) * env.camera.scale, (center.y - env.camera.y) * env.camera.scale, (looking_at.x - env.camera.x) * env.camera.scale, (looking_at.y - env.camera.y) * 
+  env.camera.scale)
+
+  end
 end
 
 function player_entity:update_weapon (dt, env) 
   local blaster = self.blaster
+  local equipped_blaster
+  
+  if env.progress.super_blaster then
+    equipped_blaster = config.player.super_blaster
+  else
+    equipped_blaster = config.player.blaster
+  end
   
   local shoot_button = love.keyboard.isDown(keys.shoot)
   
-  local function shoot (aim_direction)
-    blaster.cooldown = config.player.blaster_cooldown
+  local function shoot (aim_direction, equipped_blaster)
+    blaster.cooldown = equipped_blaster.cooldown
     blaster.released = false
     
     local offset = aim_direction:normalized():scale(8 * 1.4)
@@ -162,7 +173,9 @@ function player_entity:update_weapon (dt, env)
     
     require('lib.entities.projectile').create(env, {
       position = projectile_origin,
-      direction = aim_direction
+      direction = aim_direction,
+      speed = equipped_blaster.velocity,
+      damage = equipped_blaster.damage
     })
   end
   
@@ -170,10 +183,12 @@ function player_entity:update_weapon (dt, env)
     blaster.released = true
   end
   
+  local has_weapon = env.progress.blaster or env.progress.super_blaster
+  
   if blaster.cooldown > 0 then
     blaster.cooldown = blaster.cooldown - dt
-  elseif shoot_button then
-    shoot(self.facing)
+  elseif has_weapon and shoot_button then
+    shoot(self.facing, equipped_blaster)
   end
 end
 

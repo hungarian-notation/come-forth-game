@@ -1,4 +1,5 @@
 local bounds = require "lib.bounds"
+local vector = require "lib.vector"
 
 local entities = {}
 

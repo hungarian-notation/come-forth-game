@@ -8,7 +8,8 @@ function projectile_entity.create (env, args)
   local instance = setmetatable({
       position = assert(args.position),
       direction = assert(args.direction), 
-      velocity = args.direction:normalized():scale(config.player.blaster_velocity)
+      velocity = args.direction:normalized():scale(assert(args.speed)),
+      damage = assert(args.damage)
     }, projectile_entity)
 
   return env.world:create(instance)
@@ -35,7 +36,7 @@ function projectile_entity:update (dt, env)
 
   if impact then
     if entity then
-      if entity:shoot(env, projectile) then
+      if not entity.shoot or entity:shoot(env, self) then
         env.world:destroy(self)
       end
     else
@@ -44,8 +45,13 @@ function projectile_entity:update (dt, env)
   end
 end
 
+local colors = {
+  [1] = {0xFF, 0xFF, 0x22},
+  [3] = {0x22, 0xFF, 0xFF}
+}
+
 function projectile_entity:draw (env)
-  love.graphics.setColor(0xFF, 0xFF, 0x22)
+  love.graphics.setColor(unpack(colors[self.damage]))
   love.graphics.ellipse("fill", (self.position.x - env.camera.x) * env.camera.scale, (self.position.y - env.camera.y) * env.camera.scale, 6 * env.camera.scale, 6 * env.camera.scale)
 end
 

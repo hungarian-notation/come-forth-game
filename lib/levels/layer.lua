@@ -5,6 +5,10 @@ local config = require "config"
 local layer = {} ; layer.__index = layer
 
 function layer.new (layer_data)
+  if not layer_data then
+    return nil
+  end
+  
   local self = setmetatable({}, layer)
   
   self.data = {}

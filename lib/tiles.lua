@@ -16,7 +16,8 @@ end
 
 tiles.named_tiles = {
   crate = 380,
-  scarab = 381
+  alien_crate = 360,
+  scarab = {381, 382, 383, 384}
 }
 
 local getQuadById, getQuadByCoord
@@ -52,7 +53,6 @@ end
 for id = 0, 399 do
   tiles[id] = { 
     id              = id,    
-    is_solid        = false,
     is_ramp         = false,
     ramp_dir        = nil,
     quad            = tiles.getQuad(id)
@@ -60,15 +60,6 @@ for id = 0, 399 do
 end
 
 -- DATA
-
-local solid_tiles = { 
-  0,    1,    2,    3,    4,    5,    6,    7,    8,
-  20,   21,   22,   23,   24,   25,   26,   27,   28
-}
-
-for i, id in ipairs(solid_tiles) do
-  tiles[id].is_solid = true
-end
 
 tiles[6].is_ramp = true
 tiles[6].ramp_dir = 'right'

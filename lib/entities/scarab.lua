@@ -5,7 +5,7 @@ local sensor    = require "lib.sensor"
 local tiles     = require "lib.tiles"
 
 local scarab_entity = {} ; scarab_entity.__index = scarab_entity
-local quad
+local quad = {}
 
 function scarab_entity.create (env, args) 
   
@@ -22,6 +22,7 @@ function scarab_entity.create (env, args)
     patrol_path     = assert(args.patrol_path, 'missing path'),
     is_clockwise    = args.is_clockwise,
     
+    
     path_segments   = {},
     path_length     = nil,
     
@@ -29,6 +30,8 @@ function scarab_entity.create (env, args)
     
     patrol_mode     = 'bounce',
     is_deadly       = true,
+    
+    hitpoints       = assert(args.hitpoints, 'missing hitpoints'),
     
     timer           = 0
   }, scarab_entity)
@@ -43,8 +46,13 @@ function scarab_entity.create (env, args)
 end
 
 function scarab_entity:shoot (env, projectile)
-  env.world:destroy(self)
-  env.destructibles:destroy(env.level.name, self.object_id)
+  self.hitpoints = self.hitpoints - projectile.damage
+  
+  if self.hitpoints <= 0 then
+    env.world:destroy(self)
+    env.destructibles:destroy(env.level.name, self.object_id)
+  end
+    
   return true
 end
 
@@ -141,8 +149,8 @@ function scarab_entity:computeProgress ()
 end
 
 function scarab_entity:draw (env)
-  if not quad then
-    quad = tiles.getQuad(tiles.named_tiles.scarab)
+  if not quad[self.hitpoints] then
+    quad[self.hitpoints] = tiles.getQuad(tiles.named_tiles.scarab[self.hitpoints])
   end
   
   local draw_location = self.position:scale(env.camera.scale):floor():scale(1 / env.camera.scale)
@@ -159,7 +167,7 @@ function scarab_entity:draw (env)
   end
   
   love.graphics.setColor(0xFF, 0xFF, 0xFF)
-  love.graphics.draw(tiles:getTileSet(), quad, 
+  love.graphics.draw(tiles:getTileSet(), quad[self.hitpoints], 
     (draw_location.x - env.camera.x) * env.camera.scale,  -- x
     (draw_location.y - env.camera.y) * env.camera.scale,  -- y
     self.rotation + math.pi / 2,  -- rotation

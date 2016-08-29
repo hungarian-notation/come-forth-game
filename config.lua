@@ -26,17 +26,27 @@ local config = {
     
     jump_attenuation  = 0.6,
     
-    blaster_cooldown  = 0.2,
-    blaster_velocity  = 400,
+    blaster = {
+      cooldown        = 0.4,
+      velocity        = 400,
+      damage          = 1
+    },
+    
+    super_blaster = {
+      cooldown        = 0.3,
+      velocity        = 400,
+      damage          = 3
+    },
+    
     
     jump = {
-      impulse         = 200,     
+      impulse         = 180,     
       float_time      = 0.2,
       float_gravity   = 50,
     },
     
     high_jump = {
-      impulse         = 250,     
+      impulse         = 220,     
       float_time      = 0.2,
       float_gravity   = 50,
     },
@@ -53,7 +63,7 @@ config.object_colors = {
   spawn = { 0x00, 0xFF, 0xFF },
   exit = { 0xAA, 0xFF, 0x00 },
   killbox = { 0xFF, 0x00, 0x00 },
-  patrol = { 0xFF, 0x00, 0xFF }
+  scarab = { 0xFF, 0x00, 0xFF }
 }
 
 return config; 

@@ -5,7 +5,7 @@ local layer = require "lib.levels.layer"
 local tiles = require "lib.tiles"
 local vector = require "lib.vector"
 
-local level_entities = require "lib.levels.entities"
+local entity_handlers = require "lib.levels.entity_handlers"
 
 local level = {} ; level.__index = level 
 
@@ -33,23 +33,45 @@ function level.new (map_data)
 end
 
 function level:initialize (env)
+  assert(env.level == self) -- sanity check
+  
   for i, object in pairs(self.objects) do
-    if level_entities[object.type] then
-      level_entities[object.type](env, object)
+    if entity_handlers[object.type] then
+      entity_handlers[object.type](env, object)
     else
-      print('no factory for type ' .. tostring(object.type))
+      print('no handler for level object type ' .. tostring(object.type))
     end
   end
 end
 
-function level:getObject (object_name)
+function level:getObjectByName (object_name)
   for i, object in ipairs(self.objects) do
     if object.name == object_name then
       return object
     end
   end
   
-  error('no such object: ' .. object_name)
+  error('no object with name: ' .. object_name)
+end
+
+function level:getObjectById (object_id)
+  for i, object in ipairs(self.objects) do
+    if object.id == object_id then
+      return object
+    end
+  end
+  
+  error('no object with id: ' .. object_id)
+end
+
+function level:getObject (id_or_name)  
+  if type(id_or_name) == 'string' then
+    return self:getObjectByName(id_or_name)
+  elseif type(id_or_name) == 'number' then
+    return self:getObjectById(id_or_name)
+  else
+    error('expected string name or number id; found ' .. type(id_or_name))
+  end
 end
 
 function level:getTilemap () 

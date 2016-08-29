@@ -6,7 +6,8 @@ local config = require "config"
 local tiles = { }
 
 tiles.named_tiles = {
-  crate = 380
+  crate = 380,
+  scarab = 381
 }
 
 local getQuadById, getQuadByCoord

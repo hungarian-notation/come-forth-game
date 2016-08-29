@@ -7,6 +7,8 @@ local vector          = require "lib.vector"
 local sensor          = require "lib.sensor"
 local entities        = require "lib.entities"
 
+local tiled           = require "lib.levels.tiled"
+
 -- Game State
 
 local env = {
@@ -265,13 +267,11 @@ function draw_level () -- draws the tilemap and any placeholder boxes for level 
               object.height / 2 * env.camera.scale)
         end
       elseif object.shape == 'polyline' then
-        local vertices = #object.polyline
-        
-        local origin = vector(object)
+        local vectors = tiled.getPath(object)
           
-        for i = 1, vertices - 1 do
-          local from = vector(object.polyline[i]) + origin
-          local to = vector(object.polyline[i + 1]) + origin
+        for i = 1, #vectors - 1 do
+          local from = vectors[i]
+          local to = vectors[i + 1]
           
           love.graphics.line(
             (from.x - env.camera.x) * env.camera.scale, 

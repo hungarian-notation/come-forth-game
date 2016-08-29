@@ -119,7 +119,7 @@ function vector:length ()
   return math.sqrt(self:length2())
 end
 
-function vector:normal() 
+function vector:normalized () 
   local len = self:length()
   
   if len == 0 then
@@ -127,6 +127,14 @@ function vector:normal()
   else 
     return vector.new(self.x / len, self.y / len)
   end
+end
+
+function vector:getNormal ()
+  return vector.new(-self.y, self.x)
+end
+
+function vector:getAntiNormal ()
+  return vector.new(self.y, -self.x)
 end
 
 function vector:floor() 

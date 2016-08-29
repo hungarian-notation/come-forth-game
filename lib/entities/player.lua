@@ -111,7 +111,7 @@ function player_entity:draw (env)
   
   love.graphics.rectangle("fill", (minimum.x - env.camera.x) * env.camera.scale, (minimum.y - env.camera.y) * env.camera.scale, config.player.size.x * env.camera.scale, config.player.size.y * env.camera.scale)
   
-  local offset = self.facing:normal():scale(8 * 1.4)
+  local offset = self.facing:normalized():scale(8 * 1.4)
   local center = minimum + self.size:scale(0.5)
   local looking_at = center + offset
   
@@ -133,7 +133,7 @@ function player_entity:update_weapon (dt, env)
     blaster.cooldown = config.player.blaster_cooldown
     blaster.released = false
     
-    local offset = aim_direction:normal():scale(8 * 1.4)
+    local offset = aim_direction:normalized():scale(8 * 1.4)
     local center = (self.position - self.origin) + self.size:scale(0.5)
     local projectile_origin = center + offset
     

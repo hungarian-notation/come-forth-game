@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.0" orientation="orthogonal" renderorder="right-down" width="36" height="36" tilewidth="16" tileheight="16" nextobjectid="26">
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="36" height="36" tilewidth="16" tileheight="16" nextobjectid="43">
  <tileset firstgid="1" source="../../tileset.tsx"/>
  <layer name="background" width="36" height="36">
   <data encoding="csv">
@@ -133,11 +133,28 @@
     <property name="target" value="tomb.entry"/>
    </properties>
   </object>
-  <object id="21" type="patrol_enemy" x="128" y="240">
-   <polyline points="0,0 160,0 160,48 240,48 240,0 400,0"/>
-  </object>
   <object id="23" type="crate" x="16" y="480" width="16" height="16"/>
   <object id="24" type="crate" x="16" y="496" width="16" height="16"/>
   <object id="25" type="crate" x="16" y="512" width="16" height="16"/>
+  <object id="34" type="patrol" x="128" y="240">
+   <properties>
+    <property name="enemy_type" value="scarab"/>
+    <property name="guide_reference" type="int" value="35"/>
+    <property name="start_vertex" type="int" value="1"/>
+   </properties>
+   <polyline points="0,0 176,0 176,48 240,48 240,0 400,0"/>
+  </object>
+  <object id="35" type="guide" x="128" y="256">
+   <polyline points="0,0 160,0 160,48 256,48 256,0 400,0"/>
+  </object>
+  <object id="38" type="patrol" x="240" y="336">
+   <properties>
+    <property name="guide_reference" type="int" value="41"/>
+   </properties>
+   <polyline points="0,0 32,0 64,32 64,64 -160,64 -160,32 0,32"/>
+  </object>
+  <object id="41" type="guide" x="240" y="320">
+   <polyline points="0,0 48,0 80,32 80,96 -176,96 -176,32 0,32"/>
+  </object>
  </objectgroup>
 </map>

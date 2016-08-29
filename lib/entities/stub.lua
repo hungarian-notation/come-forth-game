@@ -5,9 +5,14 @@ local sensor = require "lib.sensor"
 local _entity_ = {} ; _entity_.__index = _entity_
 
 function _entity_.create (env, args) 
-  local instance = setmetatable({}, _entity_)
   
   -- initialize entity
+  
+  local instance = setmetatable({
+      
+    position = assert(args.position, 'missing position')
+    
+  }, _entity_)
   
   return env.world:create(instance)
 end

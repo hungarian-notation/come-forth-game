@@ -8,7 +8,7 @@ return {
   height = 36,
   tilewidth = 16,
   tileheight = 16,
-  nextobjectid = 26,
+  nextobjectid = 43,
   properties = {},
   tilesets = {
     {
@@ -395,27 +395,6 @@ return {
           }
         },
         {
-          id = 21,
-          name = "",
-          type = "patrol_enemy",
-          shape = "polyline",
-          x = 128,
-          y = 240,
-          width = 0,
-          height = 0,
-          rotation = 0,
-          visible = true,
-          polyline = {
-            { x = 0, y = 0 },
-            { x = 160, y = 0 },
-            { x = 160, y = 48 },
-            { x = 240, y = 48 },
-            { x = 240, y = 0 },
-            { x = 400, y = 0 }
-          },
-          properties = {}
-        },
-        {
           id = 23,
           name = "",
           type = "crate",
@@ -452,6 +431,98 @@ return {
           height = 16,
           rotation = 0,
           visible = true,
+          properties = {}
+        },
+        {
+          id = 34,
+          name = "",
+          type = "patrol",
+          shape = "polyline",
+          x = 128,
+          y = 240,
+          width = 0,
+          height = 0,
+          rotation = 0,
+          visible = true,
+          polyline = {
+            { x = 0, y = 0 },
+            { x = 176, y = 0 },
+            { x = 176, y = 48 },
+            { x = 240, y = 48 },
+            { x = 240, y = 0 },
+            { x = 400, y = 0 }
+          },
+          properties = {
+            ["enemy_type"] = "scarab",
+            ["guide_reference"] = 35,
+            ["start_vertex"] = 1
+          }
+        },
+        {
+          id = 35,
+          name = "",
+          type = "guide",
+          shape = "polyline",
+          x = 128,
+          y = 256,
+          width = 0,
+          height = 0,
+          rotation = 0,
+          visible = true,
+          polyline = {
+            { x = 0, y = 0 },
+            { x = 160, y = 0 },
+            { x = 160, y = 48 },
+            { x = 256, y = 48 },
+            { x = 256, y = 0 },
+            { x = 400, y = 0 }
+          },
+          properties = {}
+        },
+        {
+          id = 38,
+          name = "",
+          type = "patrol",
+          shape = "polyline",
+          x = 240,
+          y = 336,
+          width = 0,
+          height = 0,
+          rotation = 0,
+          visible = true,
+          polyline = {
+            { x = 0, y = 0 },
+            { x = 32, y = 0 },
+            { x = 64, y = 32 },
+            { x = 64, y = 64 },
+            { x = -160, y = 64 },
+            { x = -160, y = 32 },
+            { x = 0, y = 32 }
+          },
+          properties = {
+            ["guide_reference"] = 41
+          }
+        },
+        {
+          id = 41,
+          name = "",
+          type = "guide",
+          shape = "polyline",
+          x = 240,
+          y = 320,
+          width = 0,
+          height = 0,
+          rotation = 0,
+          visible = true,
+          polyline = {
+            { x = 0, y = 0 },
+            { x = 48, y = 0 },
+            { x = 80, y = 32 },
+            { x = 80, y = 96 },
+            { x = -176, y = 96 },
+            { x = -176, y = 32 },
+            { x = 0, y = 32 }
+          },
           properties = {}
         }
       }

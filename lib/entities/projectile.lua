@@ -8,7 +8,7 @@ function projectile_entity.create (env, args)
   local instance = setmetatable({
       position = assert(args.position),
       direction = assert(args.direction), 
-      velocity = args.direction:normal():scale(config.player.blaster_velocity)
+      velocity = args.direction:normalized():scale(config.player.blaster_velocity)
     }, projectile_entity)
 
   return env.world:create(instance)
@@ -17,12 +17,12 @@ end
 function projectile_entity:update (dt, env)
   self.position = self.position + self.velocity:scale(dt)
   
-  local impact, entity = sensor.sense(env, self.position + vector(0, 2), self.direction:normal(), 8, {
+  local impact, entity = sensor.sense(env, self.position + vector(0, 2), self.direction:normalized(), 8, {
     sense_entities = true
   })
 
   if not impact then
-    impact, entity = sensor.sense(env, self.position - vector(0, 2), self.direction:normal(), 8, {
+    impact, entity = sensor.sense(env, self.position - vector(0, 2), self.direction:normalized(), 8, {
       sense_entities = true
     })
   end

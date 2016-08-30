@@ -71,7 +71,7 @@ local function draw_object_debug (env, object)
     local color_array = config.object_colors[object.type] or { 0xFF, 0xFF, 0xFF}
     love.graphics.setColor(unpack(color_array))
     
-    if object.type == 'spawn' or env.debug then
+    if env.debug then
       if object.shape == "rectangle" then
         draw_rectangle_object(env, object)
       elseif object.shape == 'polyline' then

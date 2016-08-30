@@ -13,15 +13,12 @@
  <tile id="4" terrain=",,0,0"/>
  <tile id="5" terrain="0,,0,"/>
  <tile id="7" terrain="0,0,0,0"/>
- <tile id="8" terrain="0,0,0,0"/>
  <tile id="20" terrain=",0,,"/>
  <tile id="21" terrain="0,,,"/>
  <tile id="22" terrain="0,0,,0"/>
  <tile id="23" terrain="0,0,0,"/>
  <tile id="24" terrain=",0,,0"/>
  <tile id="25" terrain="0,0,,"/>
- <tile id="27" terrain="0,0,0,0"/>
- <tile id="28" terrain="0,0,0,0"/>
  <tile id="40" terrain="2,2,2,1"/>
  <tile id="41" terrain="2,2,1,2"/>
  <tile id="42" terrain="2,2,1,1"/>

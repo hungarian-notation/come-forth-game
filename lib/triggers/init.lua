@@ -26,7 +26,8 @@ function triggers.check_triggers (env)
       if object.type == 'trigger' then
         if contains or (not object.properties.on_contains and touching) then
           if not env.triggered[object.name] then
-            env.triggered[object.name] = not triggers.trigger_table[object.name](env, object)
+            local data = object.properties and object.properties.data
+            env.triggered[object.name] = not triggers.trigger_table[object.name](env, object, data)
           end
         end
       end

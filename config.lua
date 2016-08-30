@@ -2,8 +2,12 @@ local vector = require "lib.vector"
 
 local config = {
   trigger_collections = {
-    "test_triggers"
+    "tutorial_trigger",
+    "lore_trigger"
   },
+  
+  initial_level = "entrance",
+  initial_spawner = "initial_spawn",
   
   time_step           = 1.0 / 200.0,
   
@@ -19,8 +23,8 @@ local config = {
   window_height       = 576,
     
   text_display = {
-    width = 700,
-    y = 100,
+    width = 600,
+    y = 150,
     font = 'res/blocktopia.ttf'
   },
     

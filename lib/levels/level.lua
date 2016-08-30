@@ -69,6 +69,10 @@ function level:getObjectById (object_id)
 end
 
 function level:getObject (id_or_name)  
+  if not id_or_name then
+    error('missing id or name')
+  end
+  
   if type(id_or_name) == 'string' then
     return self:getObjectByName(id_or_name)
   elseif type(id_or_name) == 'number' then

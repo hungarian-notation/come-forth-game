@@ -24,7 +24,7 @@ function environment:reset ()
   
   self.state = {}               -- used by triggers to track special game state
   self.progress = {             -- tracks the player's progress 
-      spawn_location    = { room = "entrance", spawner = "initial_spawn" },
+      spawn_location    = { room = config.initial_level, spawner = config.initial_spawner },
     
       blaster           = false,
       high_jump         = false,
@@ -53,6 +53,9 @@ end
 
 
 function environment:set_level (level_name, entry_name)
+  assert(level_name)
+  assert(entry_name)
+  
   local player_velocity
   
   if self.player then 
@@ -75,7 +78,9 @@ function environment:set_level (level_name, entry_name)
   })
 end
 
-local function split_address (address)   
+local function split_address (address)
+  print(address)
+  
   for i = #address, 0, -1 do
     if i == 0 then error('address does not contain a delimiter') end
     if address:sub(i, i) == '.' then

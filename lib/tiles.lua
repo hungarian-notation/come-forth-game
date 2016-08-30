@@ -67,6 +67,12 @@ tiles[6].ramp_dir = 'right'
 tiles[26].is_ramp = true
 tiles[26].ramp_dir = 'left'
 
+tiles[146].is_ramp = true
+tiles[146].ramp_dir = 'right'
+
+tiles[166].is_ramp = true
+tiles[166].ramp_dir = 'left'
+
 -- END DATA
 
 return tiles

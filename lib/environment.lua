@@ -6,6 +6,7 @@ local entities        = require "lib.entities"
 
 local textbox         = require "lib.textbox"
 local camera          = require "lib.draw.camera"
+local audio          = require "lib.audio"
 
 local environment = {} ; environment.__index = environment
 
@@ -38,11 +39,14 @@ function environment:reset ()
   self.textbox = textbox.create()
   self.camera = camera.create()
   
+  self.audio = audio.create()
+  
   self:reset_world()
 end
 
 function environment:reset_world ()
   self.world = entities.newWorld()
+  self.audio:playMusic()
 end
 
 function environment:spawn() 

@@ -284,11 +284,26 @@ function player_entity:simulate_physics (dt, env)
   self.position.x = self.position.x + self.velocity.x * dt
   self.position.y = self.position.y + self.velocity.y * dt
   
+  -- check ceiling
+  
+  local ceiling_sensor_height = 24
+  local ceiling_sensor_margin = 8
+  
+  local ceiling_distance = sensor.sense(env, self.position - vector(0, ceiling_sensor_height), vector(0, -1), 16, { sense_entities = true })
+  
+  if ceiling_distance and ceiling_distance < ceiling_sensor_margin then
+    self.position = self.position + vector(0, ceiling_sensor_margin - ceiling_distance)
+    if self.velocity.y < 0 then
+      self.velocity.y = 0
+    end
+  end
+  
+  
   -- check ground
       
   local floor_sensor_hoffset = 4
-  local floor_sensor_height = 4
-  local floor_sensor_margin = 4
+  local floor_sensor_height = 8
+  local floor_sensor_margin = 8
   
   local suck_to_floor
   
@@ -301,7 +316,7 @@ function player_entity:simulate_physics (dt, env)
   local left_floor_distance = sensor.sense(
     env,  
     self.position - vector(-floor_sensor_hoffset, floor_sensor_height), 
-    vector(0, 1), 16, 
+    vector(0, 1), floor_sensor_hoffset + 4, 
     
     { 
       sense_platforms = self._drop_tmr <= 0,
@@ -342,20 +357,6 @@ function player_entity:simulate_physics (dt, env)
     
     if not floor_distance or floor_distance > (floor_sensor_margin + suck_to_floor) then
       self._on_ground = false
-    end
-  end
-  
-  -- check ceiling
-  
-  local ceiling_sensor_height = 24
-  local ceiling_sensor_margin = 8
-  
-  local ceiling_distance = sensor.sense(env, self.position - vector(0, ceiling_sensor_height), vector(0, -1), 16, { sense_entities = true })
-  
-  if ceiling_distance and ceiling_distance < ceiling_sensor_margin then
-    self.position = self.position + vector(0, ceiling_sensor_margin - ceiling_distance)
-    if self.velocity.y < 0 then
-      self.velocity.y = 0
     end
   end
   

@@ -17,7 +17,7 @@ function scarab_entity.create (env, args)
     position        = vector.zero(),  -- computed manually each update
     rotation        = 0,
     minimum         = vector.zero(),
-    size            = vector(16, 16),   -- hitbox 
+    size            = vector(12, 12),   -- hitbox 
     
     patrol_path     = assert(args.patrol_path, 'missing path'),
     is_clockwise    = args.is_clockwise,
@@ -148,7 +148,7 @@ function scarab_entity:computeProgress ()
   
   self.rotation = normal:getAngle()
   
-  local center = self.position + normal:scale(8)
+  local center = self.position + normal:scale(6)
   
   self.minimum = center - self.size:scale(1/2)
 end

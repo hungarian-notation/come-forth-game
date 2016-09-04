@@ -297,7 +297,7 @@ function player_entity:simulate_physics (dt, env)
       self.velocity.y = 0
     end
   end
-  
+
   
   -- check ground
       

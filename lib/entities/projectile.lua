@@ -22,13 +22,13 @@ function projectile_entity:update (dt, env)
       return target.is_solid or target.shoot
   end
   
-  local impact, entity = sensor.sense(env, self.position + vector(0, 3), self.direction:normalized(), 3, {
+  local impact, entity = sensor.sense(env, self.position + vector(0, 5), self.direction:normalized(), 3, {
     sense_entities = true,
     entity_filter = target_filter
   })
 
   if not impact then
-    impact, entity = sensor.sense(env, self.position - vector(0, 3), self.direction:normalized(), 3, {
+    impact, entity = sensor.sense(env, self.position - vector(0, 5), self.direction:normalized(), 3, {
       sense_entities = true,
       entity_filter = target_filter
     })

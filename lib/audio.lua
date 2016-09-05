@@ -8,7 +8,7 @@ end
 
 function audio:playMusic ()
   if not background_track then
-    background_track = love.audio.newSource('res/mus/nile_music.mp3', 'stream')
+    background_track = love.audio.newSource('res/mus/new_music.mp3', 'stream')
   end
   
   if not background_track:isPlaying() then
